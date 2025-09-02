@@ -2,11 +2,12 @@ import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { FileUpload } from '@/components/FileUpload';
 import { Button } from '@/components/ui/button';
-import { X } from 'lucide-react';
+import { FileImage, X } from 'lucide-react';
 import jsPDF from 'jspdf';
 import { DndContext, closestCenter, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
 import { arrayMove, SortableContext, useSortable, rectSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import { useI18n } from '@/i18n/i18n';
 
 interface SortableImageItemProps {
     file: File;
@@ -18,7 +19,7 @@ function SortableImageItem({ file, index, onRemove }: SortableImageItemProps) {
     const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: file.name + index });
     const style = { transform: CSS.Transform.toString(transform), transition };
 
-    const [imageUrl, setImageUrl] = useState('');
+    const [imageUrl, setImageUrl] = useState<string | null>(null);
     useEffect(() => {
         const url = URL.createObjectURL(file);
         setImageUrl(url);
@@ -28,7 +29,13 @@ function SortableImageItem({ file, index, onRemove }: SortableImageItemProps) {
     return (
         <div ref={setNodeRef} style={style} {...attributes} className="relative group touch-none">
             <div {...listeners} className="cursor-grab active:cursor-grabbing">
-                <img src={imageUrl} alt={file.name} className="w-full h-auto rounded-md object-cover aspect-square" />
+                {imageUrl ? (
+                    <img src={imageUrl} alt={file.name} className="w-full h-full object-cover" />
+                ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                        <FileImage className="w-10 h-10 text-muted-foreground" />
+                    </div>
+                )}{' '}
             </div>
             <Button
                 variant="destructive"
@@ -47,6 +54,7 @@ export function ImageToPdfConverter() {
     const [isConverting, setIsConverting] = useState(false);
     const sensors = useSensors(useSensor(PointerSensor));
     const hiddenInputRef = useRef<HTMLInputElement | null>(null);
+    const { t } = useI18n();
 
     const handleDragEnd = (event: DragEndEvent) => {
         const { active, over } = event;
@@ -125,8 +133,8 @@ export function ImageToPdfConverter() {
             {imageFiles.length === 0 && (
                 <FileUpload
                     onFilesAccepted={handleFilesAccepted}
-                    title="이미지 파일 업로드"
-                    description="PDF로 변환할 이미지 파일을 드래그 앤 드롭하거나 클릭하여 선택하세요."
+                    title={t('fileUploadImageTitle')}
+                    description={t('fileUploadImageDescription')}
                     accept={{ 'image/*': [] }}
                 />
             )}

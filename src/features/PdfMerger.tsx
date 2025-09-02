@@ -10,6 +10,7 @@ import { CSS } from '@dnd-kit/utilities';
 
 // pdfjs-dist (Vite) — 워커를 import 해서 지정
 import * as pdfjsLib from 'pdfjs-dist';
+import { useI18n } from '@/i18n/i18n';
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = new URL('pdfjs-dist/build/pdf.worker.min.mjs', import.meta.url).toString();
 type PdfThumb = { url: string; revoke: () => void };
@@ -94,6 +95,7 @@ export function PdfMerger() {
     const [isMerging, setIsMerging] = useState(false);
     const sensors = useSensors(useSensor(PointerSensor));
     const hiddenInputRef = useRef<HTMLInputElement | null>(null);
+    const { t } = useI18n();
 
     const handleFilesAccepted = (files: File[]) => {
         const accepted = files.filter((f) => f.type === 'application/pdf');
@@ -156,8 +158,8 @@ export function PdfMerger() {
             {pdfFiles.length === 0 && (
                 <FileUpload
                     onFilesAccepted={handleFilesAccepted}
-                    title="PDF 파일 업로드"
-                    description="병합할 PDF 파일을 드래그 앤 드롭하거나 클릭하여 선택하세요."
+                    title={t('fileUploadPdfTitle')}
+                    description={t('fileUploadPdfDescription')}
                     accept={{ 'application/pdf': ['.pdf'] }}
                 />
             )}

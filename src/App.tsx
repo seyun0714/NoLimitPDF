@@ -10,6 +10,7 @@ import { Card, CardContent } from './components/ui/card';
 
 function AppInner() {
     const { t } = useI18n();
+
     return (
         <div className="container mx-auto max-w-5xl py-6">
             <TopBar />
@@ -40,7 +41,6 @@ function AppInner() {
                     </Tabs>
                 </CardContent>
             </Card>
-
             <Toaster richColors position="top-center" />
         </div>
     );
