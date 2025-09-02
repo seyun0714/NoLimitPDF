@@ -28,7 +28,7 @@ function AppInner() {
             <Card className="mt-2">
                 <CardContent className="p-0">
                     <Tabs defaultValue="image" className="w-full">
-                        <div className="sticky top-[64px] z-20 bg-background/80 rounded-md backdrop-blur supports-[backdrop-filter]:bg-background/50">
+                        <div className=" top-[64px] z-20 bg-background/80 rounded-md backdrop-blur supports-[backdrop-filter]:bg-background/50">
                             <TabsList className="w-full justify-start gap-2 rounded-md border-b px-4 py-3">
                                 <TabsTrigger value="image" className="data-[state=active]:font-semibold cursor-pointer">
                                     {t('tabImageToPdf')}
