@@ -20,6 +20,20 @@ const ko: Dict = {
     addFiles: '여기에 드래그하여 파일 추가',
     selectFiles: '파일 선택',
     dropAnywhere: '파일을 아무 곳에나 놓아주세요',
+    imageListTitle: '변환할 이미지 목록 (드래그하여 순서 변경)',
+    pdfListTitle: '병합할 PDF 목록 (드래그하여 순서 변경)',
+    addFile: '파일 추가',
+    convertToPdf: '{count}개 이미지 PDF로 변환',
+    mergePdfs: '{count}개 PDF 병합하기',
+    converting: '변환 중...',
+    merging: '병합 중...',
+    toastWarnAddImages: 'PDF로 변환할 이미지를 추가해주세요.',
+    toastWarnTypePdf: 'PDF 파일만 업로드할 수 있습니다.',
+    toastSuccessPdfConversion: 'PDF 변환이 완료되었습니다!',
+    toastErrorPdfConversion: 'PDF 변환 중 오류가 발생했습니다.',
+    toastErrorMergeMinFiles: '병합하려면 최소 2개 이상의 PDF 파일이 필요합니다.',
+    toastSuccessMerge: 'PDF 병합이 완료되었습니다!',
+    toastErrorMerge: 'PDF 병합 중 오류가 발생했습니다.',
 };
 
 const en: Dict = {
@@ -39,13 +53,27 @@ const en: Dict = {
     addFiles: 'Drag here to add files',
     selectFiles: 'Select Files',
     dropAnywhere: 'Drop your files anywhere',
+    imageListTitle: 'List of images to convert (drag to reorder)',
+    pdfListTitle: 'List of PDFs to merge (drag to reorder)',
+    addFile: 'Add Files',
+    convertToPdf: 'Convert {count} images to PDF',
+    mergePdfs: 'Merge {count} PDFs',
+    converting: 'Converting...',
+    merging: 'Merging...',
+    toastWarnAddImages: 'Please add images to convert to PDF.',
+    toastWarnTypePdf: 'Only PDF files can be uploaded.',
+    toastSuccessPdfConversion: 'PDF conversion complete!',
+    toastErrorPdfConversion: 'An error occurred during PDF conversion.',
+    toastErrorMergeMinFiles: 'You need at least 2 PDF files to merge.',
+    toastSuccessMerge: 'PDF merge complete!',
+    toastErrorMerge: 'An error occurred during PDF merge.',
 };
 
 const tables: Record<Lang, Dict> = { ko, en };
 
 const I18nCtx = createContext<{
     lang: Lang;
-    t: (k: keyof typeof ko) => string;
+    t: (k: keyof typeof ko, params?: Record<string, string | number>) => string;
     setLang: (l: Lang) => void;
 } | null>(null);
 
@@ -60,7 +88,16 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
         () => ({
             lang,
             setLang,
-            t: (k: keyof typeof ko) => tables[lang][k] ?? k,
+            // ✅ 2. t 함수 구현부에 params 처리 로직 추가
+            t: (k: keyof typeof ko, params?: Record<string, string | number>) => {
+                let str = tables[lang][k] ?? k;
+                if (params) {
+                    Object.entries(params).forEach(([key, value]) => {
+                        str = str.replace(new RegExp(`\\{${key}\\}`, 'g'), String(value));
+                    });
+                }
+                return str;
+            },
         }),
         [lang]
     );

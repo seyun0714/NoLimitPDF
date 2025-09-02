@@ -1,5 +1,6 @@
 // src/App.tsx
 
+import { useState } from 'react';
 import { Toaster } from '@/components/ui/sonner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ImageToPdfConverter } from './features/ImageToPdfConverter';
@@ -8,8 +9,17 @@ import { I18nProvider, useI18n } from '@/i18n/i18n';
 import { TopBar } from '@/components/TopBar';
 import { Card, CardContent } from './components/ui/card';
 
+export type AppFile = {
+    id: string;
+    file: File;
+    name: string;
+};
+
 function AppInner() {
     const { t } = useI18n();
+    // 파일 상태를 여기서 통합 관리합니다.
+    const [imageFiles, setImageFiles] = useState<AppFile[]>([]);
+    const [pdfFiles, setPdfFiles] = useState<AppFile[]>([]);
 
     return (
         <div className="container mx-auto max-w-5xl py-6">
@@ -31,11 +41,13 @@ function AppInner() {
 
                         <div className="p-6">
                             <TabsContent value="image" className="m-0">
-                                <ImageToPdfConverter />
+                                {/* 상태와 상태 변경 함수를 props로 전달 */}
+                                <ImageToPdfConverter imageFiles={imageFiles} setImageFiles={setImageFiles} />
                             </TabsContent>
 
                             <TabsContent value="merge" className="m-0">
-                                <PdfMerger />
+                                {/* 상태와 상태 변경 함수를 props로 전달 */}
+                                <PdfMerger pdfFiles={pdfFiles} setPdfFiles={setPdfFiles} />
                             </TabsContent>
                         </div>
                     </Tabs>

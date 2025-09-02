@@ -8,40 +8,44 @@ import { DndContext, closestCenter, PointerSensor, useSensor, useSensors, DragEn
 import { arrayMove, SortableContext, useSortable, rectSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { useI18n } from '@/i18n/i18n';
+import { AppFile } from '@/App';
 
 interface SortableImageItemProps {
-    file: File;
-    index: number;
-    onRemove: (index: number) => void;
+    item: AppFile;
+    onRemove: (index: string) => void;
 }
 
-function SortableImageItem({ file, index, onRemove }: SortableImageItemProps) {
-    const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: file.name + index });
+function SortableImageItem({ item, onRemove }: SortableImageItemProps) {
+    const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: item.id });
     const style = { transform: CSS.Transform.toString(transform), transition };
 
     const [imageUrl, setImageUrl] = useState<string | null>(null);
     useEffect(() => {
-        const url = URL.createObjectURL(file);
+        const url = URL.createObjectURL(item.file);
         setImageUrl(url);
         return () => URL.revokeObjectURL(url);
-    }, [file]);
+    }, [item.file]);
 
     return (
         <div ref={setNodeRef} style={style} {...attributes} className="relative group touch-none">
             <div {...listeners} className="cursor-grab active:cursor-grabbing">
-                {imageUrl ? (
-                    <img src={imageUrl} alt={file.name} className="w-full h-full object-cover" />
-                ) : (
-                    <div className="w-full h-full flex items-center justify-center">
-                        <FileImage className="w-10 h-10 text-muted-foreground" />
-                    </div>
-                )}{' '}
+                {/* ✅ A4 비율과 고정된 레이아웃을 위한 스타일 수정 */}
+                <div className="w-full rounded-md overflow-hidden border bg-card aspect-[1/1.414] flex items-center justify-center">
+                    {imageUrl ? (
+                        <img src={imageUrl} alt={item.id} className="w-full h-full object-contain" />
+                    ) : (
+                        <div className="flex items-center justify-center h-full bg-muted">
+                            <FileImage className="h-10 w-10 text-muted-foreground" />
+                        </div>
+                    )}
+                </div>
             </div>
+            <div className="mt-2 text-sm truncate">{item.name}</div>
             <Button
                 variant="destructive"
                 size="icon"
-                className="absolute top-1 right-1 h-6 w-6 opacity-0 group-hover:opacity-100"
-                onClick={() => onRemove(index)}
+                className="absolute top-1 right-1 h-6 w-6 opacity-0 group-hover:opacity-100 cursor-pointer"
+                onClick={() => onRemove(item.id)}
             >
                 <X className="h-4 w-4" />
             </Button>
@@ -49,44 +53,52 @@ function SortableImageItem({ file, index, onRemove }: SortableImageItemProps) {
     );
 }
 
-export function ImageToPdfConverter() {
-    const [imageFiles, setImageFiles] = useState<File[]>([]);
+interface ImageToPdfConverterProps {
+    imageFiles: AppFile[];
+    setImageFiles: React.Dispatch<React.SetStateAction<AppFile[]>>;
+}
+
+export function ImageToPdfConverter({ imageFiles, setImageFiles }: ImageToPdfConverterProps) {
     const [isConverting, setIsConverting] = useState(false);
     const sensors = useSensors(useSensor(PointerSensor));
     const hiddenInputRef = useRef<HTMLInputElement | null>(null);
     const { t } = useI18n();
 
+    const handleFilesAccepted = (acceptedFiles: File[]) => {
+        const newFiles: AppFile[] = acceptedFiles.map((file) => ({
+            id: crypto.randomUUID(), // ✅ 고유 ID 생성
+            file,
+            name: file.name,
+        }));
+        setImageFiles((prev) => [...prev, ...newFiles]);
+    };
+
+    const handleRemoveImage = (idToRemove: string) => {
+        setImageFiles((prev) => prev.filter((item) => item.id !== idToRemove));
+    };
+
     const handleDragEnd = (event: DragEndEvent) => {
         const { active, over } = event;
         if (over && active.id !== over.id) {
             setImageFiles((items) => {
-                const oldIndex = items.findIndex((item, i) => item.name + i === String(active.id));
-                const newIndex = items.findIndex((item, i) => item.name + i === String(over.id));
+                const oldIndex = items.findIndex((item) => item.id === active.id);
+                const newIndex = items.findIndex((item) => item.id === over.id);
                 return arrayMove(items, oldIndex, newIndex);
             });
         }
     };
 
-    const handleFilesAccepted = (files: File[]) => {
-        setImageFiles((prev) => [...prev, ...files]);
-    };
-
-    const handleRemoveImage = (indexToRemove: number) => {
-        setImageFiles((prev) => prev.filter((_, i) => i !== indexToRemove));
-    };
-
     const handleConvertToPdf = async () => {
         if (imageFiles.length === 0) {
-            toast.warning('PDF로 변환할 이미지를 추가해주세요.');
+            toast.warning(t('toastWarnAddImages'));
             return;
         }
         setIsConverting(true);
         try {
             const doc = new jsPDF();
-            for (let i = 0; i < imageFiles.length; i++) {
-                const file = imageFiles[i];
+            for (const item of imageFiles) {
                 const image = new Image();
-                const imageUrl = URL.createObjectURL(file);
+                const imageUrl = URL.createObjectURL(item.file);
 
                 await new Promise<void>((resolve) => {
                     image.src = imageUrl;
@@ -103,8 +115,6 @@ export function ImageToPdfConverter() {
 
                         const x = (pageWidth - imgWidth) / 2;
                         const y = (pageHeight - imgHeight) / 2;
-
-                        if (i > 0) doc.addPage();
                         // 파일 형식에 맞춰 자동 인식: PNG/JPEG 모두 처리
                         doc.addImage(image, undefined as any, x, y, imgWidth, imgHeight);
                         URL.revokeObjectURL(imageUrl);
@@ -116,11 +126,11 @@ export function ImageToPdfConverter() {
             // ✅ 저장은 루프가 끝난 다음 한 번만
             doc.save('converted.pdf');
 
-            toast.success('PDF 변환이 완료되었습니다!');
+            toast.success(t('toastSuccessPdfConversion'));
             setImageFiles([]);
         } catch (e) {
             console.error(e);
-            toast.error('PDF 변환 중 오류가 발생했습니다.');
+            toast.error(t('toastErrorPdfConversion'));
         } finally {
             setIsConverting(false);
         }
@@ -141,21 +151,13 @@ export function ImageToPdfConverter() {
 
             {imageFiles.length > 0 && (
                 <div className="space-y-6">
-                    <h3 className="text-xl font-semibold">변환할 이미지 목록 (드래그하여 순서 변경)</h3>
+                    <h3 className="text-xl font-semibold">{t('imageListTitle')}</h3>
 
                     <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-                        <SortableContext
-                            items={imageFiles.map((f, i) => ({ id: f.name + i }))}
-                            strategy={rectSortingStrategy}
-                        >
+                        <SortableContext items={imageFiles.map((item) => item.id)} strategy={rectSortingStrategy}>
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                {imageFiles.map((file, index) => (
-                                    <SortableImageItem
-                                        key={file.name + index}
-                                        file={file}
-                                        index={index}
-                                        onRemove={handleRemoveImage}
-                                    />
+                                {imageFiles.map((item) => (
+                                    <SortableImageItem key={item.id} item={item} onRemove={handleRemoveImage} />
                                 ))}
                             </div>
                         </SortableContext>
@@ -173,11 +175,11 @@ export function ImageToPdfConverter() {
                                 if (files.length) handleFilesAccepted(files);
                             }}
                         />
-                        <Button variant="outline" onClick={openFilePicker}>
-                            파일 추가
+                        <Button className="cursor-pointer" variant="outline" onClick={() => openFilePicker()}>
+                            {t('addFile')}
                         </Button>
-                        <Button onClick={handleConvertToPdf} disabled={isConverting}>
-                            {isConverting ? '변환 중...' : `${imageFiles.length}개 이미지 PDF로 변환`}
+                        <Button className="cursor-pointer" onClick={handleConvertToPdf} disabled={isConverting}>
+                            {isConverting ? t('converting') : t('convertToPdf', { count: imageFiles.length })}
                         </Button>
                     </div>
                 </div>
