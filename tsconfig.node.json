@@ -1,0 +1,26 @@
+// tsconfig.node.json
+
+{
+    "compilerOptions": {
+        "composite": true, // 🚨 이 설정이 가장 중요합니다!
+        "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.node.tsbuildinfo",
+        "target": "ES2023",
+        "lib": ["ES2023"],
+        "module": "ESNext",
+        "skipLibCheck": true,
+
+        /* Bundler mode */
+        "moduleResolution": "bundler",
+        "verbatimModuleSyntax": true,
+        "moduleDetection": "force",
+
+        /* Linting */
+        "strict": true,
+        "noUnusedLocals": true,
+        "noUnusedParameters": true,
+        "noFallthroughCasesInSwitch": true
+        // erasableSyntaxOnly 와 noUncheckedSideEffectImports 는 최신 버전에서 자동으로 처리되거나
+        // verbatimModuleSyntax 와 충돌할 수 있어 제거하는 것이 더 안정적일 수 있습니다.
+    },
+    "include": ["vite.config.ts"]
+}
