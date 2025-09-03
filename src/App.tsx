@@ -69,7 +69,6 @@ function AppInner() {
             </main>
             <Footer />
             <Toaster richColors position="top-center" />
-            <Analytics />
         </div>
     );
 }
@@ -78,6 +77,7 @@ function App() {
     return (
         <I18nProvider>
             <AppInner />
+            <Analytics />
         </I18nProvider>
     );
 }
