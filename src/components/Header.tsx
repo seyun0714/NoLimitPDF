@@ -9,15 +9,11 @@ export function Header() {
     const { theme, toggle } = useTheme();
     const { lang, setLang, t } = useI18n();
 
-    const handleLogoClick = () => {
-        window.location.reload(); // 페이지 새로고침
-    };
-
     return (
         <header className="w-full border-b border-border bg-background px-6 py-4">
             <div className="flex items-center justify-between">
                 {/* Logo */}
-                <div className="cursor-pointer" onClick={handleLogoClick}>
+                <div>
                     <img src="/src/assets/nolimitpdf-logo.svg" alt="nolimitpdf-logo" className="h-8 dark:invert" />{' '}
                 </div>
 

@@ -9,6 +9,7 @@ import { I18nProvider, useI18n } from '@/i18n/i18n';
 import { Header } from '@/components/Header';
 import { Card, CardContent } from './components/ui/card';
 import { Footer } from './components/Footer';
+import { Benefits } from './components/Benefits';
 
 export type AppFile = {
     id: string;
@@ -27,6 +28,8 @@ function AppInner() {
             <Header />
             <main className="container flex-1 mx-auto px-4 py-8">
                 <div className="max-w-4xl mx-auto">
+                    <Benefits />
+
                     <Card className="mt-2 bg-background">
                         <CardContent className="p-6 ">
                             <Tabs defaultValue="imageToPdf" className="w-full">

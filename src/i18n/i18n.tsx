@@ -34,6 +34,11 @@ const ko: Dict = {
     toastErrorMergeMinFiles: '병합하려면 최소 2개 이상의 PDF 파일이 필요합니다.',
     toastSuccessMerge: 'PDF 병합이 완료되었습니다!',
     toastErrorMerge: 'PDF 병합 중 오류가 발생했습니다.',
+    'benefit.title': '제한 없는 PDF 변환과 병합',
+    'benefit.subtitle': '빠르고 간단하게, 가입 없이 사용하세요.',
+    'benefit.point.imageToPdf': '이미지를 PDF로',
+    'benefit.point.mergePdf': 'PDF 병합 지원',
+    'benefit.point.unlimited': '무료 · 무제한',
 };
 
 const en: Dict = {
@@ -67,6 +72,11 @@ const en: Dict = {
     toastErrorMergeMinFiles: 'You need at least 2 PDF files to merge.',
     toastSuccessMerge: 'PDF merge complete!',
     toastErrorMerge: 'An error occurred during PDF merge.',
+    'benefit.title': 'Unlimited PDF Conversion & Merge',
+    'benefit.subtitle': 'Fast and simple. No sign-up required.',
+    'benefit.point.imageToPdf': 'Image to PDF',
+    'benefit.point.mergePdf': 'Merge PDFs',
+    'benefit.point.unlimited': 'Free & Unlimited',
 };
 
 const tables: Record<Lang, Dict> = { ko, en };
