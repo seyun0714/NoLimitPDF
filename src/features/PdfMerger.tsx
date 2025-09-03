@@ -179,7 +179,12 @@ export function PdfMerger({ pdfFiles, setPdfFiles }: PdfMergerProps) {
     const openFilePicker = () => hiddenInputRef.current?.click();
 
     return (
-        <div>
+        <div className="relative">
+            {isMerging && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+                    <div className="h-12 w-12 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
+                </div>
+            )}
             {pdfFiles.length === 0 && (
                 <FileUpload
                     onFilesAccepted={handleFilesAccepted}

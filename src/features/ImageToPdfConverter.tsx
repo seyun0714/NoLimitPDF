@@ -58,6 +58,42 @@ interface ImageToPdfConverterProps {
     setImageFiles: React.Dispatch<React.SetStateAction<AppFile[]>>;
 }
 
+// utils
+function loadImageFromBlobUrl(url: string): Promise<HTMLImageElement> {
+    return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => resolve(img);
+        img.onerror = reject;
+        // createObjectURL 자원은 호출부에서 정리
+        img.src = url;
+    });
+}
+
+// 알파채널/미지원 포맷 대비용: 캔버스로 표준 포맷으로 변환
+function imageToDataURL(img: HTMLImageElement, prefer: 'jpeg' | 'png'): string {
+    const canvas = document.createElement('canvas');
+    canvas.width = img.naturalWidth || img.width;
+    canvas.height = img.naturalHeight || img.height;
+    const ctx = canvas.getContext('2d')!;
+    ctx.drawImage(img, 0, 0);
+    if (prefer === 'png') {
+        return canvas.toDataURL('image/png'); // 무손실, 알파 유지
+    }
+    // jpeg은 알파 제거(흰 배경) + 용량↓
+    // 필요하면 흰 배경으로 깔아주는 단계 추가 가능
+    return canvas.toDataURL('image/jpeg', 0.92);
+}
+
+async function fileToDataURL(file: File, img: HTMLImageElement): Promise<{ dataUrl: string; format: 'JPEG' | 'PNG' }> {
+    // 파일 mime에 따라 기본 포맷 선택
+    const mime = (file.type || '').toLowerCase();
+    if (mime.includes('png')) {
+        return { dataUrl: imageToDataURL(img, 'png'), format: 'PNG' };
+    }
+    // jsPDF의 JPEG 호환이 가장 넓음. webp/heic 등은 jpeg로 재인코드
+    return { dataUrl: imageToDataURL(img, 'jpeg'), format: 'JPEG' };
+}
+
 export function ImageToPdfConverter({ imageFiles, setImageFiles }: ImageToPdfConverterProps) {
     const [isConverting, setIsConverting] = useState(false);
     const sensors = useSensors(useSensor(PointerSensor));
@@ -94,38 +130,44 @@ export function ImageToPdfConverter({ imageFiles, setImageFiles }: ImageToPdfCon
             return;
         }
         setIsConverting(true);
+
         try {
-            const doc = new jsPDF();
-            for (const item of imageFiles) {
-                const image = new Image();
-                const imageUrl = URL.createObjectURL(item.file);
+            const doc = new jsPDF({
+                unit: 'mm',
+                format: 'a4',
+                orientation: 'p',
+                compress: true,
+            });
 
-                await new Promise<void>((resolve) => {
-                    image.src = imageUrl;
-                    image.onload = () => {
-                        const pageWidth = doc.internal.pageSize.getWidth();
-                        const pageHeight = doc.internal.pageSize.getHeight();
+            const pageWidth = doc.internal.pageSize.getWidth();
+            const pageHeight = doc.internal.pageSize.getHeight();
 
-                        const widthRatio = pageWidth / image.width;
-                        const heightRatio = pageHeight / image.height;
-                        const ratio = Math.min(widthRatio, heightRatio);
+            for (let i = 0; i < imageFiles.length; i++) {
+                const file = imageFiles[i].file;
+                const blobUrl = URL.createObjectURL(file);
 
-                        const imgWidth = image.width * ratio;
-                        const imgHeight = image.height * ratio;
+                try {
+                    const img = await loadImageFromBlobUrl(blobUrl);
+                    const { dataUrl, format } = await fileToDataURL(file, img);
 
-                        const x = (pageWidth - imgWidth) / 2;
-                        const y = (pageHeight - imgHeight) / 2;
-                        // 파일 형식에 맞춰 자동 인식: PNG/JPEG 모두 처리
-                        doc.addImage(image, undefined as any, x, y, imgWidth, imgHeight);
-                        URL.revokeObjectURL(imageUrl);
-                        resolve();
-                    };
-                });
+                    if (i > 0) doc.addPage(); // ✅ 그냥 새 페이지 추가
+
+                    const widthRatio = pageWidth / img.width;
+                    const heightRatio = pageHeight / img.height;
+                    const ratio = Math.min(widthRatio, heightRatio);
+
+                    const drawW = img.width * ratio;
+                    const drawH = img.height * ratio;
+                    const x = (pageWidth - drawW) / 2;
+                    const y = (pageHeight - drawH) / 2;
+
+                    doc.addImage(dataUrl, format, x, y, drawW, drawH);
+                } finally {
+                    URL.revokeObjectURL(blobUrl);
+                }
             }
 
-            // ✅ 저장은 루프가 끝난 다음 한 번만
             doc.save('converted.pdf');
-
             toast.success(t('toastSuccessPdfConversion'));
             setImageFiles([]);
         } catch (e) {
@@ -139,7 +181,13 @@ export function ImageToPdfConverter({ imageFiles, setImageFiles }: ImageToPdfCon
     const openFilePicker = () => hiddenInputRef.current?.click();
 
     return (
-        <div>
+        <div className="relative">
+            {isConverting && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+                    <div className="h-12 w-12 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
+                </div>
+            )}
+
             {imageFiles.length === 0 && (
                 <FileUpload
                     onFilesAccepted={handleFilesAccepted}

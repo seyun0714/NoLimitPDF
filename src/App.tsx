@@ -8,6 +8,7 @@ import { PdfMerger } from './features/PdfMerger';
 import { I18nProvider, useI18n } from '@/i18n/i18n';
 import { Header } from '@/components/Header';
 import { Card, CardContent } from './components/ui/card';
+import { Footer } from './components/Footer';
 
 export type AppFile = {
     id: string;
@@ -22,9 +23,9 @@ function AppInner() {
     const [pdfFiles, setPdfFiles] = useState<AppFile[]>([]);
 
     return (
-        <div className="min-h-screen bg-background">
+        <div className="min-h-screen flex flex-col bg-background">
             <Header />
-            <main className="container mx-auto px-4 py-8">
+            <main className="container flex-1 mx-auto px-4 py-8">
                 <div className="max-w-4xl mx-auto">
                     <Card className="mt-2 bg-background">
                         <CardContent className="p-6 ">
@@ -62,6 +63,7 @@ function AppInner() {
                     </Card>
                 </div>
             </main>
+            <Footer />
             <Toaster richColors position="top-center" />
         </div>
     );
