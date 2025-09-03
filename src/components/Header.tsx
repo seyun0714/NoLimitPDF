@@ -14,7 +14,7 @@ export function Header() {
             <div className="flex items-center justify-between">
                 {/* Logo */}
                 <div>
-                    <img src="/src/assets/nolimitpdf-logo.svg" alt="nolimitpdf-logo" className="h-8 dark:invert" />{' '}
+                    <img src="/nolimitpdf-logo.svg" alt="nolimitpdf-logo" className="h-8 dark:invert" />{' '}
                 </div>
 
                 {/* Controls */}
