@@ -5,7 +5,7 @@ import { useTheme } from '@/hooks/useTheme';
 import { useI18n } from '@/i18n/i18n';
 import { Globe, Moon, Sun } from 'lucide-react';
 
-export function TopBar() {
+export function Header() {
     const { theme, toggle } = useTheme();
     const { lang, setLang, t } = useI18n();
 
@@ -14,11 +14,14 @@ export function TopBar() {
     };
 
     return (
-        <div className="sticky top-0 z-30 mb-6 rounded-2xl border bg-background/80 p-3 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-            <div className="mx-auto flex max-w-5xl items-center justify-between gap-3">
+        <header className="w-full border-b border-border bg-background px-6 py-4">
+            <div className="flex items-center justify-between">
+                {/* Logo */}
                 <div className="cursor-pointer" onClick={handleLogoClick}>
                     <img src="/src/assets/nolimitpdf-logo.svg" alt="nolimitpdf-logo" className="h-8 dark:invert" />{' '}
                 </div>
+
+                {/* Controls */}
                 <div className="flex items-center gap-2">
                     {/* Theme toggle */}
                     <Button
@@ -45,6 +48,6 @@ export function TopBar() {
                     </Button>
                 </div>
             </div>
-        </div>
+        </header>
     );
 }

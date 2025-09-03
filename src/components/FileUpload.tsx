@@ -29,8 +29,10 @@ export function FileUpload({ onFilesAccepted, title, description, accept, compac
             {...getRootProps()}
             className={[
                 'group relative transition-all duration-300 ease-in-out',
-                'border-2 border-dashed bg-background hover:bg-muted/50 cursor-pointer',
-                isDragActive ? 'border-accent ring-4 ring-accent/20 scale-105' : 'border-border hover:border-accent',
+                'border-2 border-dashed bg-background cursor-pointer',
+                isDragActive
+                    ? 'border-neutral-500 ring-4 ring-accent/20 scale-105'
+                    : 'border-border hover:border-neutral-500',
                 compact ? 'min-h-[120px] p-4' : 'min-h-[260px] p-6',
                 'focus-within:outline-none focus-within:ring-2 focus-within:ring-accent/50',
             ].join(' ')}
@@ -46,21 +48,19 @@ export function FileUpload({ onFilesAccepted, title, description, accept, compac
                 <CardContent className="flex flex-col items-center justify-center gap-4 p-0">
                     <div
                         className={[
-                            'flex items-center justify-center rounded-full transition-all duration-300 ease-in-out',
+                            'flex items-center justify-center rounded-full transition-all duration-300 ease-in-out bg-muted',
                             compact ? 'h-16 w-16' : 'h-24 w-24',
-                            isDragActive ? 'bg-accent/20 scale-110' : 'bg-muted group-hover:bg-accent/10',
+                            isDragActive ? 'scale-110' : '',
                         ].join(' ')}
                     >
                         <UploadCloud
                             className={[
                                 'text-muted-foreground transition-all duration-300 ease-in-out',
                                 compact ? 'h-8 w-8' : 'h-12 w-12',
-                                'group-hover:text-accent', // 항상 accent 색상으로 보이도록 수정
-                                isDragActive ? 'text-accent' : '',
                             ].join(' ')}
                         />
                     </div>
-                    <p className={`font-semibold ${isDragActive ? 'text-accent' : 'text-muted-foreground'}`}>
+                    <p className={`font-semibold text-muted-foreground`}>
                         {isDragActive
                             ? t('dropHere')
                             : compact

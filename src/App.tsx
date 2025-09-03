@@ -6,7 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ImageToPdfConverter } from './features/ImageToPdfConverter';
 import { PdfMerger } from './features/PdfMerger';
 import { I18nProvider, useI18n } from '@/i18n/i18n';
-import { TopBar } from '@/components/TopBar';
+import { Header } from '@/components/Header';
 import { Card, CardContent } from './components/ui/card';
 
 export type AppFile = {
@@ -22,37 +22,46 @@ function AppInner() {
     const [pdfFiles, setPdfFiles] = useState<AppFile[]>([]);
 
     return (
-        <div className="container mx-auto max-w-5xl py-6">
-            <TopBar />
+        <div className="min-h-screen bg-background">
+            <Header />
+            <main className="container mx-auto px-4 py-8">
+                <div className="max-w-4xl mx-auto">
+                    <Card className="mt-2 bg-background">
+                        <CardContent className="p-6 ">
+                            <Tabs defaultValue="imageToPdf" className="w-full">
+                                <div className=" top-[64px] z-20 bg-background/80 rounded-md backdrop-blur supports-[backdrop-filter]:bg-background/50">
+                                    <TabsList className="grid w-full grid-cols-2 mb-6">
+                                        <TabsTrigger
+                                            value="imageToPdf"
+                                            className="data-[state=active]:font-semibold cursor-pointer gap-2"
+                                        >
+                                            {t('tabImageToPdf')}
+                                        </TabsTrigger>
+                                        <TabsTrigger
+                                            value="mergePdf"
+                                            className="data-[state=active]:font-semibold cursor-pointer gap-2"
+                                        >
+                                            {t('tabPdfMerge')}
+                                        </TabsTrigger>
+                                    </TabsList>
+                                </div>
 
-            <Card className="mt-2">
-                <CardContent className="p-0">
-                    <Tabs defaultValue="image" className="w-full">
-                        <div className=" top-[64px] z-20 bg-background/80 rounded-md backdrop-blur supports-[backdrop-filter]:bg-background/50">
-                            <TabsList className="w-full justify-start gap-2 rounded-md border-b px-4 py-3">
-                                <TabsTrigger value="image" className="data-[state=active]:font-semibold cursor-pointer">
-                                    {t('tabImageToPdf')}
-                                </TabsTrigger>
-                                <TabsTrigger value="merge" className="data-[state=active]:font-semibold cursor-pointer">
-                                    {t('tabPdfMerge')}
-                                </TabsTrigger>
-                            </TabsList>
-                        </div>
+                                <div className="p-6">
+                                    <TabsContent value="imageToPdf" className="m-0">
+                                        {/* 상태와 상태 변경 함수를 props로 전달 */}
+                                        <ImageToPdfConverter imageFiles={imageFiles} setImageFiles={setImageFiles} />
+                                    </TabsContent>
 
-                        <div className="p-6">
-                            <TabsContent value="image" className="m-0">
-                                {/* 상태와 상태 변경 함수를 props로 전달 */}
-                                <ImageToPdfConverter imageFiles={imageFiles} setImageFiles={setImageFiles} />
-                            </TabsContent>
-
-                            <TabsContent value="merge" className="m-0">
-                                {/* 상태와 상태 변경 함수를 props로 전달 */}
-                                <PdfMerger pdfFiles={pdfFiles} setPdfFiles={setPdfFiles} />
-                            </TabsContent>
-                        </div>
-                    </Tabs>
-                </CardContent>
-            </Card>
+                                    <TabsContent value="mergePdf" className="m-0">
+                                        {/* 상태와 상태 변경 함수를 props로 전달 */}
+                                        <PdfMerger pdfFiles={pdfFiles} setPdfFiles={setPdfFiles} />
+                                    </TabsContent>
+                                </div>
+                            </Tabs>
+                        </CardContent>
+                    </Card>
+                </div>
+            </main>
             <Toaster richColors position="top-center" />
         </div>
     );
