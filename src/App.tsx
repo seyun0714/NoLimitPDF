@@ -10,6 +10,7 @@ import { Header } from '@/components/Header';
 import { Card, CardContent } from './components/ui/card';
 import { Footer } from './components/Footer';
 import { Benefits } from './components/Benefits';
+import { Analytics } from '@vercel/analytics/next';
 
 export type AppFile = {
     id: string;
@@ -68,6 +69,7 @@ function AppInner() {
             </main>
             <Footer />
             <Toaster richColors position="top-center" />
+            <Analytics />
         </div>
     );
 }
