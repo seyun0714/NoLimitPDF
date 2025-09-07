@@ -19,18 +19,6 @@ export function Header() {
 
                 {/* Controls */}
                 <div className="flex items-center gap-2">
-                    {/* Theme toggle */}
-                    <Button
-                        type="button"
-                        variant="outline"
-                        onClick={toggle}
-                        className="flex items-center gap-2 cursor-pointer"
-                        title={theme === 'dark' ? t('themeLight') : t('themeDark')}
-                    >
-                        {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-                        <span className="hidden sm:inline">{theme === 'dark' ? t('themeLight') : t('themeDark')}</span>
-                    </Button>
-
                     {/* Language toggle */}
                     <Button
                         type="button"
@@ -41,6 +29,18 @@ export function Header() {
                     >
                         <Globe className="h-4 w-4" />
                         <span className="hidden sm:inline">{lang.toUpperCase()}</span>
+                    </Button>
+
+                    {/* Theme toggle */}
+                    <Button
+                        type="button"
+                        variant="outline"
+                        onClick={toggle}
+                        className="flex items-center gap-2 cursor-pointer"
+                        title={theme === 'dark' ? t('themeLight') : t('themeDark')}
+                    >
+                        {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+                        <span className="hidden sm:inline">{theme === 'dark' ? t('themeLight') : t('themeDark')}</span>
                     </Button>
                 </div>
             </div>

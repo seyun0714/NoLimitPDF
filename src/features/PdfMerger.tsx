@@ -14,6 +14,7 @@ import { useDndReorder } from '@/hooks/useDndReorder';
 import { useHiddenFileInput } from '@/hooks/useHiddenFileInput';
 import { useI18n } from '@/i18n/i18n';
 import { AppFile } from '@/App';
+import { useAppendDropzone } from '@/hooks/useAppendDropzone';
 
 // ✅ Vite/ESM 환경: .mjs 워커를 명시적으로 지정
 pdfjsLib.GlobalWorkerOptions.workerSrc = new URL('pdfjs-dist/build/pdf.worker.min.mjs', import.meta.url).toString();
@@ -177,6 +178,22 @@ export function PdfMerger({ pdfFiles, setPdfFiles }: PdfMergerProps) {
         }
     };
 
+    const addPdfs = (files: File[]) => {
+        const picked = files.filter((f) => f.type === 'application/pdf');
+        if (picked.length !== files.length) toast.warning(t('toastWarnTypePdf'));
+        const newFiles = picked.map((file) => ({ id: crypto.randomUUID(), file, name: file.name }));
+        setPdfFiles((prev) => [...prev, ...newFiles]);
+    };
+
+    const {
+        getRootProps: getAppendRootProps,
+        getInputProps: getAppendInputProps,
+        isDragActive,
+    } = useAppendDropzone({
+        onFiles: addPdfs,
+        accept: { 'application/pdf': ['.pdf'] },
+    });
+
     return (
         <div className="relative">
             {isMerging && <LoadingOverlay />}
@@ -189,33 +206,63 @@ export function PdfMerger({ pdfFiles, setPdfFiles }: PdfMergerProps) {
                     accept={{ 'application/pdf': ['.pdf'] }}
                 />
             ) : (
-                <div className="space-y-6">
-                    <h3 className="text-xl font-semibold">{t('pdfListTitle')}</h3>
+                <div {...getAppendRootProps({ className: 'relative' })}>
+                    <input {...getAppendInputProps()} />
 
-                    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
-                        <SortableContext items={pdfFiles.map((i) => i.id)} strategy={rectSortingStrategy}>
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                {pdfFiles.map((item, index) => (
-                                    <PdfThumbCard
-                                        key={item.id}
-                                        item={item}
-                                        index={index}
-                                        cache={thumbCache}
-                                        onRemove={(id) => setPdfFiles((prev) => prev.filter((it) => it.id !== id))}
-                                    />
-                                ))}
+                    {isDragActive && (
+                        <div className="pointer-events-none absolute inset-2 md:inset-4 z-40">
+                            <div
+                                className="
+        h-full w-full rounded-2xl
+        border-2 border-dashed border-accent/60
+        ring-4 ring-accent/20
+        bg-background/60
+        backdrop-blur-sm backdrop-saturate-150 backdrop-brightness-90
+        grid place-items-center
+        transition-all
+      "
+                            >
+                                <span
+                                    className="
+          px-3 py-1 rounded-md
+          bg-card/85 text-foreground shadow-sm
+          text-sm md:text-base font-semibold tracking-tight
+        "
+                                >
+                                    {t('dropHere')}
+                                </span>
                             </div>
-                        </SortableContext>
-                    </DndContext>
+                        </div>
+                    )}
 
-                    <div className="flex justify-center gap-4">
-                        <input {...inputProps} accept="application/pdf" multiple />
-                        <Button variant="outline" onClick={open} className="cursor-pointer">
-                            {t('addFile')}
-                        </Button>
-                        <Button onClick={handleMerge} disabled={isMerging} className="cursor-pointer">
-                            {isMerging ? t('merging') : t('mergePdfs', { count: pdfFiles.length })}
-                        </Button>
+                    <div className="space-y-6">
+                        <h3 className="text-xl font-semibold">{t('pdfListTitle')}</h3>
+
+                        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
+                            <SortableContext items={pdfFiles.map((i) => i.id)} strategy={rectSortingStrategy}>
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                    {pdfFiles.map((item, index) => (
+                                        <PdfThumbCard
+                                            key={item.id}
+                                            item={item}
+                                            index={index}
+                                            cache={thumbCache}
+                                            onRemove={(id) => setPdfFiles((prev) => prev.filter((it) => it.id !== id))}
+                                        />
+                                    ))}
+                                </div>
+                            </SortableContext>
+                        </DndContext>
+
+                        <div className="flex justify-center gap-4">
+                            <input {...inputProps} accept="application/pdf" multiple />
+                            <Button variant="outline" onClick={open} className="cursor-pointer">
+                                {t('addFile')}
+                            </Button>
+                            <Button onClick={handleMerge} disabled={isMerging} className="cursor-pointer">
+                                {isMerging ? t('merging') : t('mergePdfs', { count: pdfFiles.length })}
+                            </Button>
+                        </div>
                     </div>
                 </div>
             )}

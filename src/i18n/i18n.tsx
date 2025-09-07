@@ -39,6 +39,7 @@ const ko: Dict = {
     'benefit.point.imageToPdf': '이미지를 PDF로',
     'benefit.point.mergePdf': 'PDF 병합 지원',
     'benefit.point.unlimited': '무료 · 무제한',
+    'benefit.point.localProcessing': '로컬 내 처리',
 };
 
 const en: Dict = {
@@ -77,6 +78,7 @@ const en: Dict = {
     'benefit.point.imageToPdf': 'Image to PDF',
     'benefit.point.mergePdf': 'Merge PDFs',
     'benefit.point.unlimited': 'Free & Unlimited',
+    'benefit.point.localProcessing': 'Local Processing',
 };
 
 const tables: Record<Lang, Dict> = { ko, en };

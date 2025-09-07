@@ -12,6 +12,7 @@ import { useDndReorder } from '@/hooks/useDndReorder';
 import { useHiddenFileInput } from '@/hooks/useHiddenFileInput';
 import { useI18n } from '@/i18n/i18n';
 import { AppFile } from '@/App';
+import { useAppendDropzone } from '@/hooks/useAppendDropzone';
 
 interface ImageToPdfConverterProps {
     imageFiles: AppFile[];
@@ -140,65 +141,111 @@ export function ImageToPdfConverter({ imageFiles, setImageFiles }: ImageToPdfCon
         }
     };
 
+    const addImages = (files: File[]) => {
+        const newFiles = files.map((file) => ({ id: crypto.randomUUID(), file, name: file.name }));
+        setImageFiles((prev) => [...prev, ...newFiles]);
+    };
+
+    // ✅ 파일이 있을 때만, 섹션 전체를 dropzone으로 활성
+    const {
+        getRootProps: getAppendRootProps,
+        getInputProps: getAppendInputProps,
+        isDragActive,
+    } = useAppendDropzone({
+        onFiles: addImages,
+        accept: { 'image/*': [] },
+    });
+
     return (
         <div className="relative">
             {isConverting && <LoadingOverlay />}
 
-            {imageFiles.length === 0 && (
+            {imageFiles.length === 0 ? (
                 <FileUpload
                     onFilesAccepted={(files) => inputProps.onChange({ target: { files } } as any)}
                     title={t('fileUploadImageTitle')}
                     description={t('fileUploadImageDescription')}
                     accept={{ 'image/*': [] }}
                 />
-            )}
+            ) : (
+                <div {...getAppendRootProps({ className: 'relative' })}>
+                    <input {...getAppendInputProps()} /> {/* 보이지 않는 drop 입력 */}
+                    {/* 드래그 중 시각 피드백(얇은 오버레이) */}
+                    {isDragActive && (
+                        <div
+                            className="
+      pointer-events-none absolute inset-0 z-40
+      grid place-items-center
+      rounded-lg
+      border-2 border-dashed border-accent/60
+      ring-4 ring-accent/20
+      bg-background/60
+      backdrop-blur-sm backdrop-saturate-150 backdrop-brightness-90
+      transition-all
+    "
+                        >
+                            <span
+                                className="
+        px-3 py-1 rounded-md
+        text-foreground
+        shadow-sm
+        text-sm md:text-base font-semibold tracking-tight
+      "
+                            >
+                                {t('dropHere')}
+                            </span>
+                        </div>
+                    )}
+                    <div className="space-y-6">
+                        <h3 className="text-xl font-semibold">{t('imageListTitle')}</h3>
 
-            {imageFiles.length > 0 && (
-                <div className="space-y-6">
-                    <h3 className="text-xl font-semibold">{t('imageListTitle')}</h3>
+                        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
+                            <SortableContext items={imageFiles.map((i) => i.id)} strategy={rectSortingStrategy}>
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                    {imageFiles.map((item, index) => {
+                                        // 캐시에서 먼저 조회, 없으면 생성 후 캐시
+                                        let url = imgUrlCache.get(item.id);
+                                        if (!url) {
+                                            url = URL.createObjectURL(item.file);
+                                            imgUrlCache.set(item.id, url);
+                                        }
 
-                    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
-                        <SortableContext items={imageFiles.map((i) => i.id)} strategy={rectSortingStrategy}>
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                {imageFiles.map((item, index) => {
-                                    // 캐시에서 먼저 조회, 없으면 생성 후 캐시
-                                    let url = imgUrlCache.get(item.id);
-                                    if (!url) {
-                                        url = URL.createObjectURL(item.file);
-                                        imgUrlCache.set(item.id, url);
-                                    }
+                                        return (
+                                            <SortableCard
+                                                key={item.id}
+                                                id={item.id}
+                                                index={index}
+                                                title={item.name}
+                                                onRemove={removeItem}
+                                                aspect="1/1.414" // ✅ 문제 1: 카드 프레임 고정 (A4)
+                                            >
+                                                {/* ✅ 문제 2: 프레임(부모)이 고정이라 로딩 중에도 높이 유지 */}
+                                                {url ? (
+                                                    <img
+                                                        src={url}
+                                                        alt={item.id}
+                                                        className="w-full h-full object-contain"
+                                                    />
+                                                ) : (
+                                                    // 방어적 스켈레톤 (사실상 url이 항상 즉시 있음)
+                                                    <div className="flex items-center justify-center h-full bg-muted animate-pulse" />
+                                                )}
+                                            </SortableCard>
+                                        );
+                                    })}
+                                </div>
+                            </SortableContext>
+                        </DndContext>
 
-                                    return (
-                                        <SortableCard
-                                            key={item.id}
-                                            id={item.id}
-                                            index={index}
-                                            title={item.name}
-                                            onRemove={removeItem}
-                                            aspect="1/1.414" // ✅ 문제 1: 카드 프레임 고정 (A4)
-                                        >
-                                            {/* ✅ 문제 2: 프레임(부모)이 고정이라 로딩 중에도 높이 유지 */}
-                                            {url ? (
-                                                <img src={url} alt={item.id} className="w-full h-full object-contain" />
-                                            ) : (
-                                                // 방어적 스켈레톤 (사실상 url이 항상 즉시 있음)
-                                                <div className="flex items-center justify-center h-full bg-muted animate-pulse" />
-                                            )}
-                                        </SortableCard>
-                                    );
-                                })}
-                            </div>
-                        </SortableContext>
-                    </DndContext>
-
-                    <div className="flex justify-center gap-4">
-                        <input {...inputProps} accept="image/*" multiple />
-                        <Button variant="outline" onClick={open}>
-                            {t('addFile')}
-                        </Button>
-                        <Button onClick={handleConvertToPdf} disabled={isConverting}>
-                            {isConverting ? t('converting') : t('convertToPdf', { count: imageFiles.length })}
-                        </Button>
+                        <div className="flex justify-center gap-4">
+                            <input {...inputProps} accept="image/*" multiple />
+                            <Button variant="outline" onClick={open}>
+                                {t('addFile')}
+                            </Button>
+                            <Button onClick={handleConvertToPdf} disabled={isConverting}>
+                                {isConverting ? t('converting') : t('convertToPdf', { count: imageFiles.length })}
+                            </Button>
+                        </div>
                     </div>
                 </div>
             )}

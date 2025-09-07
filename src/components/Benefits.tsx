@@ -1,6 +1,6 @@
 // src/components/Benefits.tsx
 import { useI18n } from '@/i18n/i18n';
-import { Infinity, Images, Merge } from 'lucide-react';
+import { Infinity, Images, Merge, Shield } from 'lucide-react';
 
 export function Benefits() {
     const { t } = useI18n();
@@ -22,6 +22,10 @@ export function Benefits() {
                 <div className="flex items-center gap-2">
                     <Infinity className="h-4 w-4" />
                     {t('benefit.point.unlimited')}
+                </div>
+                <div className="flex items-center gap-2">
+                    <Shield className="h-4 w-4" />
+                    {t('benefit.point.localProcessing')}
                 </div>
             </div>
         </section>
