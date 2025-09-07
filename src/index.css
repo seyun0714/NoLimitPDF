@@ -126,3 +126,16 @@
         @apply bg-background text-foreground;
     }
 }
+
+/* ✅ View Transition의 기본 애니메이션 제거 (우리가 지정한 clip-path만 사용) */
+::view-transition-old(root),
+::view-transition-new(root) {
+    animation: none;
+}
+
+/* ✅ 배경/글자/테두리 등 색상 전환은 계속 부드럽게 */
+html,
+body {
+    transition: background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease, fill 0.25s ease,
+        stroke 0.25s ease;
+}

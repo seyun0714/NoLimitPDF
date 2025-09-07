@@ -67,19 +67,29 @@ function usePdfThumbnail(id: string, file: File, cache: ThumbnailCache): { url: 
 
 interface SortablePdfItemProps {
     item: AppFile;
+    index: number;
     onRemove: (id: string) => void;
     cache: ThumbnailCache;
 }
 
-function SortablePdfItem({ item, onRemove, cache }: SortablePdfItemProps) {
-    const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: item.id });
-    const style = { transform: CSS.Transform.toString(transform), transition };
+function SortablePdfItem({ item, onRemove, index, cache }: SortablePdfItemProps) {
+    const { attributes, listeners, setNodeRef, transform, transition, isDragging, isSorting } = useSortable({
+        id: item.id,
+    });
+    const style = {
+        transform: CSS.Transform.toString(transform),
+        transition,
+        zIndex: isDragging ? 999 : isSorting ? 2 : 1, // 드래그 중 최상단
+    };
     const thumb = usePdfThumbnail(item.id, item.file, cache);
 
     return (
         <div ref={setNodeRef} style={style} {...attributes} className="relative group touch-none">
             <div {...listeners} className="cursor-grab active:cursor-grabbing">
                 <div className="rounded-md overflow-hidden border bg-card aspect-[1/1.414]">
+                    <span className="absolute top-1 left-1 bg-black/60 text-white text-xs px-2 py-0.5 rounded">
+                        {index + 1}
+                    </span>
                     {thumb ? (
                         <img src={thumb.url} alt={item.id} className="w-full h-full object-contain" />
                     ) : (
@@ -201,9 +211,10 @@ export function PdfMerger({ pdfFiles, setPdfFiles }: PdfMergerProps) {
                     <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
                         <SortableContext items={pdfFiles.map((item) => item.id)} strategy={rectSortingStrategy}>
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                {pdfFiles.map((item) => (
+                                {pdfFiles.map((item, index) => (
                                     <SortablePdfItem
                                         key={item.id} // ✅ key를 고유 ID로 사용
+                                        index={index}
                                         item={item}
                                         onRemove={handleRemovePdf}
                                         cache={thumbnailCache}

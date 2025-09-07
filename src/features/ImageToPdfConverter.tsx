@@ -12,12 +12,19 @@ import { AppFile } from '@/App';
 
 interface SortableImageItemProps {
     item: AppFile;
+    index: number;
     onRemove: (index: string) => void;
 }
 
-function SortableImageItem({ item, onRemove }: SortableImageItemProps) {
-    const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: item.id });
-    const style = { transform: CSS.Transform.toString(transform), transition };
+function SortableImageItem({ item, index, onRemove }: SortableImageItemProps) {
+    const { attributes, listeners, setNodeRef, transform, transition, isDragging, isSorting } = useSortable({
+        id: item.id,
+    });
+    const style = {
+        transform: CSS.Transform.toString(transform),
+        transition,
+        zIndex: isDragging ? 999 : isSorting ? 2 : 1, // 드래그 중 최상단
+    };
 
     const [imageUrl, setImageUrl] = useState<string | null>(null);
     useEffect(() => {
@@ -31,6 +38,10 @@ function SortableImageItem({ item, onRemove }: SortableImageItemProps) {
             <div {...listeners} className="cursor-grab active:cursor-grabbing">
                 {/* ✅ A4 비율과 고정된 레이아웃을 위한 스타일 수정 */}
                 <div className="w-full rounded-md overflow-hidden border bg-card aspect-[1/1.414] flex items-center justify-center">
+                    <span className="absolute top-1 left-1 bg-black/60 text-white text-xs px-2 py-0.5 rounded">
+                        {index + 1}
+                    </span>
+
                     {imageUrl ? (
                         <img src={imageUrl} alt={item.id} className="w-full h-full object-contain" />
                     ) : (
@@ -204,8 +215,13 @@ export function ImageToPdfConverter({ imageFiles, setImageFiles }: ImageToPdfCon
                     <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
                         <SortableContext items={imageFiles.map((item) => item.id)} strategy={rectSortingStrategy}>
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                {imageFiles.map((item) => (
-                                    <SortableImageItem key={item.id} item={item} onRemove={handleRemoveImage} />
+                                {imageFiles.map((item, index) => (
+                                    <SortableImageItem
+                                        key={item.id}
+                                        index={index}
+                                        item={item}
+                                        onRemove={handleRemoveImage}
+                                    />
                                 ))}
                             </div>
                         </SortableContext>
