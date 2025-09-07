@@ -1,223 +1,207 @@
-import { useEffect, useRef, useState } from 'react';
+// src/features/PdfMerger.tsx
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import { DndContext, closestCenter } from '@dnd-kit/core';
+import { SortableContext, rectSortingStrategy } from '@dnd-kit/sortable';
+import { PDFDocument } from 'pdf-lib';
+import * as pdfjsLib from 'pdfjs-dist';
+
 import { FileUpload } from '@/components/FileUpload';
 import { Button } from '@/components/ui/button';
-import { FileText, X } from 'lucide-react';
-import { PDFDocument } from 'pdf-lib';
-import { DndContext, closestCenter, DragEndEvent, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
-import { SortableContext, rectSortingStrategy, useSortable, arrayMove } from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
+import { SortableCard } from '@/components/SortableCard';
+import { LoadingOverlay } from '@/components/LoadingOverlay';
+import { useDndReorder } from '@/hooks/useDndReorder';
+import { useHiddenFileInput } from '@/hooks/useHiddenFileInput';
+import { useI18n } from '@/i18n/i18n';
 import { AppFile } from '@/App';
 
-// pdfjs-dist (Vite) — 워커를 import 해서 지정
-import * as pdfjsLib from 'pdfjs-dist';
-import { useI18n } from '@/i18n/i18n';
-
+// ✅ Vite/ESM 환경: .mjs 워커를 명시적으로 지정
 pdfjsLib.GlobalWorkerOptions.workerSrc = new URL('pdfjs-dist/build/pdf.worker.min.mjs', import.meta.url).toString();
-
-type ThumbnailCache = Map<string, { url: string; revoke: () => void }>;
-
-function usePdfThumbnail(id: string, file: File, cache: ThumbnailCache): { url: string; revoke: () => void } | null {
-    const [thumb, setThumb] = useState<{ url: string; revoke: () => void } | null>(() => cache.get(id) || null);
-    useEffect(() => {
-        if (cache.has(id)) {
-            setThumb(cache.get(id)!);
-            return;
-        }
-
-        let revokedUrl: string | null = null;
-        let cancelled = false;
-
-        (async () => {
-            try {
-                const arrayBuffer = await file.arrayBuffer();
-                const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-                const page = await pdf.getPage(1);
-
-                const viewport = page.getViewport({ scale: 0.3 });
-                const canvas = document.createElement('canvas');
-                const ctx = canvas.getContext('2d')!;
-                canvas.width = viewport.width;
-                canvas.height = viewport.height;
-                await page.render({ canvasContext: ctx, viewport, canvas }).promise;
-
-                const blob = await new Promise<Blob | null>((res) => canvas.toBlob(res, 'image/png'));
-                if (!blob) throw new Error('thumbnail toBlob failed');
-                const url = URL.createObjectURL(blob);
-                revokedUrl = url;
-
-                const newThumb = { url, revoke: () => URL.revokeObjectURL(url) };
-                if (!cancelled) {
-                    cache.set(id, newThumb);
-                    setThumb(newThumb);
-                }
-            } catch {
-                // 썸네일 생성 실패
-            }
-        })();
-
-        return () => {
-            cancelled = true;
-            if (revokedUrl) URL.revokeObjectURL(revokedUrl);
-        };
-    }, [id, file, cache]);
-
-    return thumb;
-}
-
-interface SortablePdfItemProps {
-    item: AppFile;
-    index: number;
-    onRemove: (id: string) => void;
-    cache: ThumbnailCache;
-}
-
-function SortablePdfItem({ item, onRemove, index, cache }: SortablePdfItemProps) {
-    const { attributes, listeners, setNodeRef, transform, transition, isDragging, isSorting } = useSortable({
-        id: item.id,
-    });
-    const style = {
-        transform: CSS.Transform.toString(transform),
-        transition,
-        zIndex: isDragging ? 999 : isSorting ? 2 : 1, // 드래그 중 최상단
-    };
-    const thumb = usePdfThumbnail(item.id, item.file, cache);
-
-    return (
-        <div ref={setNodeRef} style={style} {...attributes} className="relative group touch-none">
-            <div {...listeners} className="cursor-grab active:cursor-grabbing">
-                <div className="rounded-md overflow-hidden border bg-card aspect-[1/1.414]">
-                    <span className="absolute top-1 left-1 bg-black/60 text-white text-xs px-2 py-0.5 rounded">
-                        {index + 1}
-                    </span>
-                    {thumb ? (
-                        <img src={thumb.url} alt={item.id} className="w-full h-full object-contain" />
-                    ) : (
-                        <div className="flex items-center justify-center h-full bg-muted">
-                            <FileText className="h-10 w-10 text-muted-foreground" />
-                        </div>
-                    )}
-                </div>
-            </div>
-            <div className="mt-2 text-sm truncate">{item.name}</div>
-            <Button
-                variant="destructive"
-                size="icon"
-                className="absolute top-1 right-1 h-6 w-6 opacity-0 group-hover:opacity-100 cursor-pointer"
-                onClick={() => onRemove(item.id)}
-            >
-                <X className="h-4 w-4" />
-            </Button>
-        </div>
-    );
-}
 
 interface PdfMergerProps {
     pdfFiles: AppFile[];
     setPdfFiles: React.Dispatch<React.SetStateAction<AppFile[]>>;
 }
 
+type ThumbnailCache = Map<string, string>; // id -> objectURL
+
+/** 첫 페이지를 그려 objectURL로 반환 (pdf.js v4 호환) */
+async function renderPdfFirstPageThumbnail(file: File, scale = 0.35): Promise<string> {
+    const buf = await file.arrayBuffer();
+    const loadingTask = pdfjsLib.getDocument({ data: buf });
+    const pdf = await loadingTask.promise;
+    const page = await pdf.getPage(1);
+
+    const dpr = window.devicePixelRatio || 1;
+    const viewport = page.getViewport({ scale: scale * dpr });
+
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d')!;
+    canvas.width = Math.floor(viewport.width);
+    canvas.height = Math.floor(viewport.height);
+
+    // ✅ v4: canvas 필수
+    await page.render({
+        canvasContext: ctx,
+        viewport,
+        canvas,
+    }).promise;
+
+    const blob: Blob = await new Promise((resolve, reject) =>
+        canvas.toBlob((b) => (b ? resolve(b) : reject(new Error('toBlob failed'))), 'image/png')
+    );
+    return URL.createObjectURL(blob);
+}
+
+/** 여러 PDF 병합 */
+async function mergePdfFiles(files: File[]): Promise<Uint8Array> {
+    const merged = await PDFDocument.create();
+    for (const file of files) {
+        const bytes = new Uint8Array(await file.arrayBuffer());
+        const src = await PDFDocument.load(bytes);
+        const pages = await merged.copyPages(src, src.getPageIndices());
+        pages.forEach((p) => merged.addPage(p));
+    }
+    return merged.save();
+}
+
+/** 각 항목 썸네일을 독립적으로 생성/표시하는 자식 컴포넌트 */
+function PdfThumbCard({
+    item,
+    index,
+    cache,
+    onRemove,
+}: {
+    item: AppFile;
+    index: number;
+    cache: ThumbnailCache;
+    onRemove: (id: string) => void;
+}) {
+    const [thumbUrl, setThumbUrl] = useState<string | null>(() => cache.get(item.id) ?? null);
+    const [error, setError] = useState<string | null>(null);
+
+    // 썸네일 생성 (캐시 우선)
+    useEffect(() => {
+        let alive = true;
+
+        (async () => {
+            try {
+                if (cache.has(item.id)) {
+                    if (alive) setThumbUrl(cache.get(item.id)!);
+                    return;
+                }
+                const url = await renderPdfFirstPageThumbnail(item.file, 0.35);
+                if (!alive) {
+                    URL.revokeObjectURL(url);
+                    return;
+                }
+                cache.set(item.id, url);
+                setThumbUrl(url);
+            } catch (e: any) {
+                console.error('thumbnail error', e);
+                if (alive) setError(e?.message || 'Thumbnail error');
+            }
+        })();
+
+        return () => {
+            alive = false;
+        };
+    }, [item.id, item.file, cache]);
+
+    return (
+        <SortableCard id={item.id} index={index} onRemove={onRemove} title={item.name} aspect="1/1.414">
+            {error ? (
+                <div className="flex h-full w-full items-center justify-center bg-muted text-xs text-destructive px-2 text-center">
+                    {error}
+                </div>
+            ) : thumbUrl ? (
+                <img src={thumbUrl} alt={item.name} className="w-full h-full object-contain" />
+            ) : (
+                // ✅ 문제 2: 로딩 중에도 프레임 유지 + 스켈레톤
+                <div className="flex items-center justify-center h-full w-full bg-muted animate-pulse" />
+            )}
+        </SortableCard>
+    );
+}
+
 export function PdfMerger({ pdfFiles, setPdfFiles }: PdfMergerProps) {
-    const [thumbnailCache] = useState<ThumbnailCache>(() => new Map());
     const [isMerging, setIsMerging] = useState(false);
-    const sensors = useSensors(useSensor(PointerSensor));
-    const hiddenInputRef = useRef<HTMLInputElement | null>(null);
+    const [thumbCache] = useState<ThumbnailCache>(() => new Map());
     const { t } = useI18n();
 
-    const handleFilesAccepted = (acceptedFiles: File[]) => {
-        const newFiles: AppFile[] = acceptedFiles
-            .filter((f) => f.type === 'application/pdf')
-            .map((file) => ({
-                id: crypto.randomUUID(), // ✅ 고유 ID 생성
-                file,
-                name: file.name,
-            }));
-        if (newFiles.length !== acceptedFiles.length) {
-            toast.warning('toastWarnTypePdf');
+    // 공통 DnD 훅
+    const { sensors, onDragEnd } = useDndReorder(setPdfFiles);
+
+    // 공통 파일 입력 훅
+    const { open, inputProps } = useHiddenFileInput((files) => {
+        const picked = files.filter((f) => f.type === 'application/pdf');
+        if (picked.length !== files.length) {
+            toast.warning(t('toastWarnTypePdf') || 'Only PDF is allowed.');
         }
+        const newFiles: AppFile[] = picked.map((file) => ({
+            id: crypto.randomUUID(),
+            file,
+            name: file.name,
+        }));
         setPdfFiles((prev) => [...prev, ...newFiles]);
-    };
+    });
 
-    const handleRemovePdf = (idToRemove: string) => {
-        setPdfFiles((prev) => prev.filter((item) => item.id !== idToRemove));
-    };
-
-    const handleDragEnd = (event: DragEndEvent) => {
-        const { active, over } = event;
-        if (over && active.id !== over.id) {
-            setPdfFiles((items) => {
-                const oldIndex = items.findIndex((item) => item.id === active.id);
-                const newIndex = items.findIndex((item) => item.id === over.id);
-                return arrayMove(items, oldIndex, newIndex);
-            });
-        }
-    };
-
-    const handleMergePdfs = async () => {
-        if (pdfFiles.length < 2) {
-            toast.error(t('toastErrorMergeMinFiles'));
+    const handleMerge = async () => {
+        if (pdfFiles.length === 0) {
+            toast.warning(t('toastWarnAddPdfs') || 'Add PDFs first.');
             return;
         }
         setIsMerging(true);
         try {
-            const mergedPdf = await PDFDocument.create();
-            for (const item of pdfFiles) {
-                const fileBuffer = await item.file.arrayBuffer();
-                const pdfToMerge = await PDFDocument.load(fileBuffer);
-                const copiedPages = await mergedPdf.copyPages(pdfToMerge, pdfToMerge.getPageIndices());
-                copiedPages.forEach((page) => mergedPdf.addPage(page));
-            }
-            const mergedPdfBytes = await mergedPdf.save();
-            const blob = new Blob([mergedPdfBytes.buffer as ArrayBuffer], { type: 'application/pdf' });
+            const bytes = await mergePdfFiles(pdfFiles.map((f) => f.file));
+            const blob = new Blob([bytes.buffer as ArrayBuffer], { type: 'application/pdf' });
             const url = URL.createObjectURL(blob);
-            const a = Object.assign(document.createElement('a'), { href: url, download: 'merged.pdf' });
+
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'merged.pdf';
             document.body.appendChild(a);
             a.click();
             a.remove();
             URL.revokeObjectURL(url);
 
-            toast.success(t('toastSuccessMerge'));
+            toast.success(t('toastSuccessPdfMerge') || 'Merged!');
             setPdfFiles([]);
-        } catch (err) {
-            console.error(err);
-            toast.error(t('toastErrorMerge'));
+            // (선택) 썸네일 캐시 정리하고 싶다면 여기서 loop 돌며 revoke
+            // for (const [, u] of thumbCache) URL.revokeObjectURL(u); thumbCache.clear();
+        } catch (e) {
+            console.error(e);
+            toast.error(t('toastErrorPdfMerge') || 'Merge failed.');
         } finally {
             setIsMerging(false);
         }
     };
 
-    const openFilePicker = () => hiddenInputRef.current?.click();
-
     return (
         <div className="relative">
-            {isMerging && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-                    <div className="h-12 w-12 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
-                </div>
-            )}
-            {pdfFiles.length === 0 && (
+            {isMerging && <LoadingOverlay />}
+
+            {pdfFiles.length === 0 ? (
                 <FileUpload
-                    onFilesAccepted={handleFilesAccepted}
+                    onFilesAccepted={(files) => inputProps.onChange({ target: { files } } as any)}
                     title={t('fileUploadPdfTitle')}
                     description={t('fileUploadPdfDescription')}
                     accept={{ 'application/pdf': ['.pdf'] }}
                 />
-            )}
-
-            {pdfFiles.length > 0 && (
+            ) : (
                 <div className="space-y-6">
                     <h3 className="text-xl font-semibold">{t('pdfListTitle')}</h3>
 
-                    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-                        <SortableContext items={pdfFiles.map((item) => item.id)} strategy={rectSortingStrategy}>
+                    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
+                        <SortableContext items={pdfFiles.map((i) => i.id)} strategy={rectSortingStrategy}>
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                                 {pdfFiles.map((item, index) => (
-                                    <SortablePdfItem
-                                        key={item.id} // ✅ key를 고유 ID로 사용
-                                        index={index}
+                                    <PdfThumbCard
+                                        key={item.id}
                                         item={item}
-                                        onRemove={handleRemovePdf}
-                                        cache={thumbnailCache}
+                                        index={index}
+                                        cache={thumbCache}
+                                        onRemove={(id) => setPdfFiles((prev) => prev.filter((it) => it.id !== id))}
                                     />
                                 ))}
                             </div>
@@ -225,21 +209,11 @@ export function PdfMerger({ pdfFiles, setPdfFiles }: PdfMergerProps) {
                     </DndContext>
 
                     <div className="flex justify-center gap-4">
-                        <input
-                            ref={hiddenInputRef}
-                            type="file"
-                            accept="application/pdf"
-                            multiple
-                            className="hidden"
-                            onChange={(e) => {
-                                const files = Array.from(e.target.files ?? []);
-                                if (files.length) handleFilesAccepted(files);
-                            }}
-                        />
-                        <Button className="cursor-pointer" variant="outline" onClick={() => openFilePicker()}>
+                        <input {...inputProps} accept="application/pdf" multiple />
+                        <Button variant="outline" onClick={open} className="cursor-pointer">
                             {t('addFile')}
                         </Button>
-                        <Button className="cursor-pointer" onClick={handleMergePdfs} disabled={isMerging}>
+                        <Button onClick={handleMerge} disabled={isMerging} className="cursor-pointer">
                             {isMerging ? t('merging') : t('mergePdfs', { count: pdfFiles.length })}
                         </Button>
                     </div>

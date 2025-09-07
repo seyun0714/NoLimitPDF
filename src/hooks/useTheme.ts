@@ -59,7 +59,7 @@ export function useTheme() {
                     clipPath: [`circle(0px at ${x}px ${y}px)`, `circle(${endRadius}px at ${x}px ${y}px)`],
                 },
                 {
-                    duration: 1000,
+                    duration: 800,
                     easing: 'cubic-bezier(.2,.7,0,1)',
                     pseudoElement: '::view-transition-new(root)',
                 }
