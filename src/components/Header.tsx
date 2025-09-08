@@ -28,7 +28,7 @@ export function Header() {
                         title={t('language')}
                     >
                         <Globe className="h-4 w-4" />
-                        <span className="hidden sm:inline">{lang.toUpperCase()}</span>
+                        <span className="hidden sm:inline">{(lang === 'ko' ? 'en' : 'ko').toUpperCase()}</span>
                     </Button>
 
                     {/* Theme toggle */}

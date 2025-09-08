@@ -1,16 +1,18 @@
 // src/App.tsx
-import { useState } from 'react';
+import React, { Suspense, useState } from 'react';
 import { Routes, Route, NavLink, Navigate, Outlet } from 'react-router-dom';
 import { Toaster } from '@/components/ui/sonner';
-import { ImageToPdfConverter } from './features/ImageToPdfConverter';
-import { PdfMerger } from './features/PdfMerger';
 import { I18nProvider, useI18n } from '@/i18n/i18n';
 import { Header } from '@/components/Header';
 import { Card, CardContent } from './components/ui/card';
 import { Footer } from './components/Footer';
 import { Benefits } from './components/Benefits';
 import { Analytics } from '@vercel/analytics/react';
-import { NotFound } from './features/NotFound';
+import { LoadingOverlay } from './components/LoadingOverlay';
+
+const ImageToPdfConverter = React.lazy(() => import('./features/ImageToPdfConverter'));
+const PdfMerger = React.lazy(() => import('./features/PdfMerger'));
+const NotFound = React.lazy(() => import('./features/NotFound'));
 
 export type AppFile = {
     id: string;
@@ -57,7 +59,6 @@ function ToolTabsLayout() {
 }
 
 function AppInner() {
-    const { t } = useI18n();
     const [imageFiles, setImageFiles] = useState<AppFile[]>([]);
     const [pdfFiles, setPdfFiles] = useState<AppFile[]>([]);
 
@@ -67,26 +68,29 @@ function AppInner() {
             <main className="container flex-1 mx-auto px-4 py-8">
                 <div className="max-w-4xl mx-auto">
                     <Benefits />
+                    <Suspense fallback={<LoadingOverlay isBlur={false} />}>
+                        <Routes>
+                            {/* 루트 → 이미지 변환으로 리다이렉트 */}
+                            <Route path="/" element={<Navigate to="/image-to-pdf" replace />} />
 
-                    <Routes>
-                        {/* 루트 → 이미지 변환으로 리다이렉트 */}
-                        <Route path="/" element={<Navigate to="/image-to-pdf" replace />} />
+                            {/* 탭 레이아웃 안에 두 기능 페이지만 배치 */}
+                            <Route element={<ToolTabsLayout />}>
+                                <Route
+                                    path="/image-to-pdf"
+                                    element={
+                                        <ImageToPdfConverter imageFiles={imageFiles} setImageFiles={setImageFiles} />
+                                    }
+                                />
+                                <Route
+                                    path="/merge-pdf"
+                                    element={<PdfMerger pdfFiles={pdfFiles} setPdfFiles={setPdfFiles} />}
+                                />
+                            </Route>
 
-                        {/* 탭 레이아웃 안에 두 기능 페이지만 배치 */}
-                        <Route element={<ToolTabsLayout />}>
-                            <Route
-                                path="/image-to-pdf"
-                                element={<ImageToPdfConverter imageFiles={imageFiles} setImageFiles={setImageFiles} />}
-                            />
-                            <Route
-                                path="/merge-pdf"
-                                element={<PdfMerger pdfFiles={pdfFiles} setPdfFiles={setPdfFiles} />}
-                            />
-                        </Route>
-
-                        {/* 그 외 모든 경로는 Card 바깥에서 NotFound 전체 화면 */}
-                        <Route path="*" element={<NotFound />} />
-                    </Routes>
+                            {/* 그 외 모든 경로는 Card 바깥에서 NotFound 전체 화면 */}
+                            <Route path="*" element={<NotFound />} />
+                        </Routes>
+                    </Suspense>
                 </div>
             </main>
             <Footer />
@@ -97,9 +101,8 @@ function AppInner() {
 }
 
 function App() {
-    const initialLang = navigator.language.startsWith('ko') ? 'ko' : 'en';
     return (
-        <I18nProvider initialLang={initialLang}>
+        <I18nProvider>
             <AppInner />
         </I18nProvider>
     );

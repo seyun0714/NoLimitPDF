@@ -50,7 +50,7 @@ async function fileToDataURL(file: File, img: HTMLImageElement): Promise<{ dataU
     return { dataUrl: imageToDataURL(img, 'jpeg'), format: 'JPEG' }; // webp/heic 등은 JPEG로
 }
 
-export function ImageToPdfConverter({ imageFiles, setImageFiles }: ImageToPdfConverterProps) {
+export default function ImageToPdfConverter({ imageFiles, setImageFiles }: ImageToPdfConverterProps) {
     const [isConverting, setIsConverting] = useState(false);
     const { t } = useI18n();
 
@@ -158,7 +158,7 @@ export function ImageToPdfConverter({ imageFiles, setImageFiles }: ImageToPdfCon
 
     return (
         <div className="relative">
-            {isConverting && <LoadingOverlay />}
+            {isConverting && <LoadingOverlay isBlur={true} />}
 
             {imageFiles.length === 0 ? (
                 <FileUpload

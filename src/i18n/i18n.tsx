@@ -95,8 +95,8 @@ const I18nCtx = createContext<{
     setLang: (l: Lang) => void;
 } | null>(null);
 
-export function I18nProvider({ children, initialLang }: { children: React.ReactNode; initialLang: Lang }) {
-    const [lang, setLang] = useState<Lang>(initialLang);
+export function I18nProvider({ children }: { children: React.ReactNode }) {
+    const [lang, setLang] = useState<Lang>(() => (localStorage.getItem('lang') === 'en' ? 'en' : 'ko'));
 
     useEffect(() => {
         localStorage.setItem('lang', lang);

@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useI18n } from '@/i18n/i18n';
 
-export function NotFound() {
+export default function NotFound() {
     const { t, lang } = useI18n();
 
     const title = lang === 'ko' ? '404: 페이지를 찾을 수 없습니다 | NoLimitPDF' : '404: Page Not Found | NoLimitPDF';

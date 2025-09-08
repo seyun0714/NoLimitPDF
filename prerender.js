@@ -120,3 +120,24 @@ for (const lang of languages) {
     fs.writeFileSync(path.join(langPath, '404.html'), html404);
     console.log(`Prerendered: ${path.join(langPath, '404.html')}`);
 }
+
+console.log('Generating sitemap.xml...');
+
+const sitemapContent = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
+${routes
+    .map(
+        (route) => `
+<url>
+  <loc>${siteUrl}/en${route === '/' ? '' : route}</loc>
+  <xhtml:link rel="alternate" hreflang="ko" href="${siteUrl}/ko${route === '/' ? '' : route}"/>
+  <xhtml:link rel="alternate" hreflang="en" href="${siteUrl}/en${route === '/' ? '' : route}"/>
+  <xhtml:link rel="alternate" hreflang="x-default" href="${siteUrl}${route === '/' ? '' : route}"/>
+</url>
+`
+    )
+    .join('')}
+</urlset>`;
+
+fs.writeFileSync(path.join(distPath, 'sitemap.xml'), sitemapContent.trim());
+console.log('Generated sitemap.xml');

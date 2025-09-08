@@ -125,7 +125,7 @@ function PdfThumbCard({
     );
 }
 
-export function PdfMerger({ pdfFiles, setPdfFiles }: PdfMergerProps) {
+export default function PdfMerger({ pdfFiles, setPdfFiles }: PdfMergerProps) {
     const [isMerging, setIsMerging] = useState(false);
     const [thumbCache] = useState<ThumbnailCache>(() => new Map());
     const { t } = useI18n();
@@ -196,7 +196,7 @@ export function PdfMerger({ pdfFiles, setPdfFiles }: PdfMergerProps) {
 
     return (
         <div className="relative">
-            {isMerging && <LoadingOverlay />}
+            {isMerging && <LoadingOverlay isBlur={true} />}
 
             {pdfFiles.length === 0 ? (
                 <FileUpload
