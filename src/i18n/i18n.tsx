@@ -40,6 +40,9 @@ const ko: Dict = {
     'benefit.point.mergePdf': 'PDF 병합 지원',
     'benefit.point.unlimited': '무료 · 무제한',
     'benefit.point.localProcessing': '로컬 내 처리',
+    '404.title': '페이지를 찾을 수 없습니다',
+    '404.description': '죄송합니다, 요청하신 페이지를 찾을 수 없습니다.',
+    '404.button': '홈페이지로 돌아가기',
 };
 
 const en: Dict = {
@@ -79,6 +82,9 @@ const en: Dict = {
     'benefit.point.mergePdf': 'Merge PDFs',
     'benefit.point.unlimited': 'Free & Unlimited',
     'benefit.point.localProcessing': 'Local Processing',
+    '404.title': 'Page Not Found',
+    '404.description': 'Sorry, we couldn’t find the page you’re looking for.',
+    '404.button': 'Go back home',
 };
 
 const tables: Record<Lang, Dict> = { ko, en };
@@ -89,8 +95,8 @@ const I18nCtx = createContext<{
     setLang: (l: Lang) => void;
 } | null>(null);
 
-export function I18nProvider({ children }: { children: React.ReactNode }) {
-    const [lang, setLang] = useState<Lang>(() => (localStorage.getItem('lang') === 'en' ? 'en' : 'ko'));
+export function I18nProvider({ children, initialLang }: { children: React.ReactNode; initialLang: Lang }) {
+    const [lang, setLang] = useState<Lang>(initialLang);
 
     useEffect(() => {
         localStorage.setItem('lang', lang);

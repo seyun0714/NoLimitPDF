@@ -1,0 +1,15 @@
+{
+    "rewrites": [
+        { "source": "/ko/:path*", "destination": "/ko/index.html" },
+        { "source": "/en/:path*", "destination": "/en/index.html" }
+    ],
+    "redirects": [
+        {
+            "source": "/",
+            "has": [{ "type": "header", "key": "accept-language", "value": ".*ko.*" }],
+            "destination": "/ko/",
+            "permanent": false
+        },
+        { "source": "/", "destination": "/en/", "permanent": false }
+    ]
+}
