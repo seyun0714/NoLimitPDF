@@ -19,13 +19,8 @@ export function Header() {
         <header className="w-full border-b border-border bg-background px-6 py-4">
             <div className="flex items-center justify-between">
                 {/* Logo */}
-                <div>
-                    <img
-                        onClick={handleClickLogo}
-                        src="/nolimitpdf-logo.svg"
-                        alt="nolimitpdf-logo"
-                        className="h-8 dark:invert"
-                    />{' '}
+                <div className=" cursor-pointer" onClick={handleClickLogo}>
+                    <img src="/nolimitpdf-logo.svg" alt="nolimitpdf-logo" className="h-8 dark:invert" />{' '}
                 </div>
 
                 {/* Controls */}

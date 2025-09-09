@@ -52,14 +52,14 @@ const ko: Dict = {
     '404.button': '홈페이지로 돌아가기',
     aboutTitle: '소개',
     aboutText:
-        'NoLimitPDF는 누구나 쉽고 빠르게 PDF 파일을 다룰 수 있도록 돕기 위해 만들어졌습니다. 모든 기능은 무료이며, 여러분의 소중한 데이터는 서버에 저장되지 않고 오직 여러분의 컴퓨터에서만 처리됩니다.',
+        'NoLimitPDF는 누구나 쉽고 빠르게 PDF 파일을 다룰 수 있도록 돕기 위해 만들어졌습니다. \n모든 기능은 무료이며, 여러분의 소중한 데이터는 서버에 저장되지 않고 \n오직 여러분의 컴퓨터에서만 처리됩니다.',
     contactTitle: '문의하기',
     contactText: '서비스에 대한 질문이나 제안이 있으시면 아래 이메일로 연락해주세요.',
     privacyPolicyTitle: '개인정보처리방침',
     privacyPolicyLastUpdated: '최종 업데이트: 2025년 9월 9일',
     privacyPolicyIntroTitle: '소개',
     privacyPolicyIntroText:
-        'NoLimitPDF("회사", "저희")는 귀하의 개인정보를 중요하게 생각합니다. 본 개인정보처리방침은 저희가 귀하의 정보를 수집, 이용, 공개하는 방법에 대해 설명합니다.',
+        'NoLimitPDF("회사", "저희")는 귀하의 개인정보를 중요하게 생각합니다. \n본 개인정보처리방침은 저희가 귀하의 정보를 수집, 이용, 공개하는 방법에 대해 설명합니다.',
     privacyPolicyCollectionTitle: '정보 수집',
     privacyPolicyCollectionText:
         '저희 서비스는 서버에 파일을 저장하지 않으며, 모든 PDF 변환 및 병합 과정은 사용자의 브라우저 내에서 로컬로 처리됩니다. 따라서 저희는 귀하가 업로드한 파일이나 개인 식별 정보를 수집하거나 저장하지 않습니다.',

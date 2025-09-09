@@ -8,6 +8,7 @@ import { Card, CardContent } from './components/ui/card';
 import { Footer } from './components/Footer';
 import { Benefits } from './components/Benefits';
 import { Analytics } from '@vercel/analytics/react';
+import { SpeedInsights } from '@vercel/speed-insights/react';
 import { LoadingOverlay } from './components/LoadingOverlay';
 
 const ImageToPdfConverter = React.lazy(() => import('./features/ImageToPdfConverter'));
@@ -101,6 +102,7 @@ function AppInner() {
             </main>
             <Footer />
             <Analytics />
+            <SpeedInsights />
             <Toaster richColors position="top-center" />
         </div>
     );

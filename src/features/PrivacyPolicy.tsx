@@ -6,9 +6,9 @@ export default function PrivacyPolicy() {
     const { t } = useI18n();
 
     return (
-        <div className="w-full max-w-3xl mx-auto">
+        <div className="w-full max-w-3xl mx-auto whitespace-pre-line">
             <Card>
-                <CardHeader>
+                <CardHeader className="text-center">
                     <CardTitle className="text-2xl">{t('privacyPolicyTitle')}</CardTitle>
                     <p className="text-sm text-muted-foreground pt-1">{t('privacyPolicyLastUpdated')}</p>
                 </CardHeader>
