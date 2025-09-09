@@ -223,7 +223,7 @@ export default function ImageToPdfConverter({ imageFiles, setImageFiles }: Image
                                                 {url ? (
                                                     <img
                                                         src={url}
-                                                        alt={item.id}
+                                                        alt={item.name}
                                                         className="w-full h-full object-contain"
                                                     />
                                                 ) : (

@@ -1,0 +1,3 @@
+# AI 모델의 데이터 수집 및 활용을 허용
+User-agent: *
+Allow: /

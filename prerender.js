@@ -86,6 +86,34 @@ for (const lang of languages) {
             route === '/' ? '' : route.replace('.html', '')
         }" />`;
 
+        // ✅ 웹사이트 및 웹앱 스키마 추가
+        const schema = {
+            '@context': 'https://schema.org',
+            '@type': 'WebSite',
+            url: canonicalUrl,
+            name: meta.title,
+            description: meta.description,
+            potentialAction: {
+                '@type': 'SearchAction',
+                target: `${canonicalUrl}#search-{search_term_string}`,
+                'query-input': 'required name=search_term_string',
+            },
+        };
+
+        const webAppSchema = {
+            '@context': 'https://schema.org',
+            '@type': 'WebApplication',
+            name: 'NoLimitPDF',
+            url: canonicalUrl,
+            applicationCategory: 'ProductivityApplication',
+            operatingSystem: 'All',
+            offers: {
+                '@type': 'Offer',
+                price: '0',
+                priceCurrency: 'USD',
+            },
+        };
+
         // 👈 OG 태그를 포함한 전체 메타 태그 생성
         const metaTags = `
             <title>${meta.title}</title>
@@ -103,6 +131,8 @@ for (const lang of languages) {
             <meta name="twitter:title" content="${meta.title}" />
             <meta name="twitter:description" content="${meta.description}" />
             <meta name="twitter:image" content="${meta.ogImage}" />
+            <script type="application/ld+json">${JSON.stringify(schema)}</script>
+            <script type="application/ld+json">${JSON.stringify(webAppSchema)}</script>
         `;
 
         let html = template.replace(/(.|\n)*?/, metaTags);
