@@ -60,22 +60,15 @@ export default function ImageToPdfConverter({ imageFiles, setImageFiles }: Image
     // ✅ 이미지 objectURL 캐시 (재정렬 시 재로딩 방지)
     const [imgUrlCache] = useState<Map<string, string>>(() => new Map());
 
-    const addImages = (files: File[]) => {
-        const newFiles = files.map((file) => ({ id: crypto.randomUUID(), file, name: file.name }));
-        setImageFiles((prev) => [...prev, ...newFiles]);
-    };
-
     // ✅ 공통 파일 입력 훅
-    const { open, inputProps } = useHiddenFileInput(addImages);
-
-    // const { open, inputProps } = useHiddenFileInput((files) => {
-    //     const newFiles: AppFile[] = files.map((file) => ({
-    //         id: crypto.randomUUID(),
-    //         file,
-    //         name: file.name,
-    //     }));
-    //     setImageFiles((prev) => [...prev, ...newFiles]);
-    // });
+    const { open, inputProps } = useHiddenFileInput((files) => {
+        const newFiles: AppFile[] = files.map((file) => ({
+            id: crypto.randomUUID(),
+            file,
+            name: file.name,
+        }));
+        setImageFiles((prev) => [...prev, ...newFiles]);
+    });
 
     // 파일 제거 시 캐시 정리
     const removeItem = (id: string) => {
@@ -153,6 +146,11 @@ export default function ImageToPdfConverter({ imageFiles, setImageFiles }: Image
         }
     };
 
+    const addImages = (files: File[]) => {
+        const newFiles = files.map((file) => ({ id: crypto.randomUUID(), file, name: file.name }));
+        setImageFiles((prev) => [...prev, ...newFiles]);
+    };
+
     // ✅ 파일이 있을 때만, 섹션 전체를 dropzone으로 활성
     const {
         getRootProps: getAppendRootProps,
@@ -174,8 +172,7 @@ export default function ImageToPdfConverter({ imageFiles, setImageFiles }: Image
                         <p className="text-muted-foreground">{t('imageToPdfInfoP2')}</p>
                     </div>
                     <FileUpload
-                        onFilesAccepted={addImages}
-                        // onFilesAccepted={(files) => inputProps.onChange({ target: { files } } as any)}
+                        onFilesAccepted={(files) => inputProps.onChange({ target: { files } } as any)}
                         title={t('fileUploadImageTitle')}
                         description={t('fileUploadImageDescription')}
                         accept={{ 'image/*': [] }}

@@ -133,14 +133,19 @@ export default function PdfMerger({ pdfFiles, setPdfFiles }: PdfMergerProps) {
     // 공통 DnD 훅
     const { sensors, onDragEnd } = useDndReorder(setPdfFiles);
 
-    const addPdfs = (files: File[]) => {
+    // 공통 파일 입력 훅
+    const { open, inputProps } = useHiddenFileInput((files) => {
         const picked = files.filter((f) => f.type === 'application/pdf');
-        if (picked.length !== files.length) toast.warning(t('toastWarnTypePdf'));
-        const newFiles = picked.map((file) => ({ id: crypto.randomUUID(), file, name: file.name }));
+        if (picked.length !== files.length) {
+            toast.warning(t('toastWarnTypePdf') || 'Only PDF is allowed.');
+        }
+        const newFiles: AppFile[] = picked.map((file) => ({
+            id: crypto.randomUUID(),
+            file,
+            name: file.name,
+        }));
         setPdfFiles((prev) => [...prev, ...newFiles]);
-    };
-
-    const { open, inputProps } = useHiddenFileInput(addPdfs);
+    });
 
     const handleReset = () => {
         setPdfFiles([]);
@@ -181,6 +186,13 @@ export default function PdfMerger({ pdfFiles, setPdfFiles }: PdfMergerProps) {
         }
     };
 
+    const addPdfs = (files: File[]) => {
+        const picked = files.filter((f) => f.type === 'application/pdf');
+        if (picked.length !== files.length) toast.warning(t('toastWarnTypePdf'));
+        const newFiles = picked.map((file) => ({ id: crypto.randomUUID(), file, name: file.name }));
+        setPdfFiles((prev) => [...prev, ...newFiles]);
+    };
+
     const {
         getRootProps: getAppendRootProps,
         getInputProps: getAppendInputProps,
@@ -202,7 +214,7 @@ export default function PdfMerger({ pdfFiles, setPdfFiles }: PdfMergerProps) {
                         <p className="text-muted-foreground">{t('pdfMergeInfoP2')}</p>
                     </div>
                     <FileUpload
-                        onFilesAccepted={addPdfs}
+                        onFilesAccepted={(files) => inputProps.onChange({ target: { files } } as any)}
                         title={t('fileUploadPdfTitle')}
                         description={t('fileUploadPdfDescription')}
                         accept={{ 'application/pdf': ['.pdf'] }}
