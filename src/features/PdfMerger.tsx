@@ -199,12 +199,19 @@ export default function PdfMerger({ pdfFiles, setPdfFiles }: PdfMergerProps) {
             {isMerging && <LoadingOverlay isBlur={true} />}
 
             {pdfFiles.length === 0 ? (
-                <FileUpload
-                    onFilesAccepted={(files) => inputProps.onChange({ target: { files } } as any)}
-                    title={t('fileUploadPdfTitle')}
-                    description={t('fileUploadPdfDescription')}
-                    accept={{ 'application/pdf': ['.pdf'] }}
-                />
+                <>
+                    <div className="text-center mb-6 space-y-2">
+                        <h2 className="text-xl font-semibold">{t('pdfMergeInfoTitle')}</h2>
+                        <p className="text-muted-foreground">{t('pdfMergeInfoP1')}</p>
+                        <p className="text-muted-foreground">{t('pdfMergeInfoP2')}</p>
+                    </div>
+                    <FileUpload
+                        onFilesAccepted={(files) => inputProps.onChange({ target: { files } } as any)}
+                        title={t('fileUploadPdfTitle')}
+                        description={t('fileUploadPdfDescription')}
+                        accept={{ 'application/pdf': ['.pdf'] }}
+                    />
+                </>
             ) : (
                 <div {...getAppendRootProps({ className: 'relative' })}>
                     <input {...getAppendInputProps()} />

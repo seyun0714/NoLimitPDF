@@ -13,6 +13,9 @@ import { LoadingOverlay } from './components/LoadingOverlay';
 const ImageToPdfConverter = React.lazy(() => import('./features/ImageToPdfConverter'));
 const PdfMerger = React.lazy(() => import('./features/PdfMerger'));
 const NotFound = React.lazy(() => import('./features/NotFound'));
+const About = React.lazy(() => import('./features/About'));
+const Contact = React.lazy(() => import('./features/Contact'));
+const PrivacyPolicy = React.lazy(() => import('./features/PrivacyPolicy'));
 
 export type AppFile = {
     id: string;
@@ -88,6 +91,9 @@ function AppInner() {
                             </Route>
 
                             {/* 그 외 모든 경로는 Card 바깥에서 NotFound 전체 화면 */}
+                            <Route path="/about" element={<About />} />
+                            <Route path="/contact" element={<Contact />} />
+                            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
                             <Route path="*" element={<NotFound />} />
                         </Routes>
                     </Suspense>

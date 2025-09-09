@@ -4,17 +4,28 @@ import { Button } from '@/components/ui/button';
 import { useTheme } from '@/hooks/useTheme';
 import { useI18n } from '@/i18n/i18n';
 import { Globe, Moon, Sun } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 export function Header() {
     const { theme, toggle } = useTheme();
     const { lang, setLang, t } = useI18n();
+    const navigator = useNavigate();
+
+    const handleClickLogo = () => {
+        navigator('/');
+    };
 
     return (
         <header className="w-full border-b border-border bg-background px-6 py-4">
             <div className="flex items-center justify-between">
                 {/* Logo */}
                 <div>
-                    <img src="/nolimitpdf-logo.svg" alt="nolimitpdf-logo" className="h-8 dark:invert" />{' '}
+                    <img
+                        onClick={handleClickLogo}
+                        src="/nolimitpdf-logo.svg"
+                        alt="nolimitpdf-logo"
+                        className="h-8 dark:invert"
+                    />{' '}
                 </div>
 
                 {/* Controls */}

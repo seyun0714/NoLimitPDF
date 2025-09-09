@@ -159,14 +159,20 @@ export default function ImageToPdfConverter({ imageFiles, setImageFiles }: Image
     return (
         <div className="relative">
             {isConverting && <LoadingOverlay isBlur={true} />}
-
             {imageFiles.length === 0 ? (
-                <FileUpload
-                    onFilesAccepted={(files) => inputProps.onChange({ target: { files } } as any)}
-                    title={t('fileUploadImageTitle')}
-                    description={t('fileUploadImageDescription')}
-                    accept={{ 'image/*': [] }}
-                />
+                <>
+                    <div className="text-center mb-6 space-y-2">
+                        <h2 className="text-xl font-semibold">{t('imageToPdfInfoTitle')}</h2>
+                        <p className="text-muted-foreground">{t('imageToPdfInfoP1')}</p>
+                        <p className="text-muted-foreground">{t('imageToPdfInfoP2')}</p>
+                    </div>
+                    <FileUpload
+                        onFilesAccepted={(files) => inputProps.onChange({ target: { files } } as any)}
+                        title={t('fileUploadImageTitle')}
+                        description={t('fileUploadImageDescription')}
+                        accept={{ 'image/*': [] }}
+                    />
+                </>
             ) : (
                 <div {...getAppendRootProps({ className: 'relative' })}>
                     <input {...getAppendInputProps()} /> {/* 보이지 않는 drop 입력 */}
