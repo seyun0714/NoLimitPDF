@@ -34,7 +34,7 @@ export function SortableCard({ id, index, onRemove, children, title, aspect = '1
                 {/* ✅ 핵심: 동적 클래스 대신 style.aspectRatio 사용 */}
                 <div className="w-full rounded-md overflow-hidden border bg-card relative" style={{ aspectRatio }}>
                     {/* 좌상단 순번 */}
-                    <span className="absolute top-1 left-1 bg-black/60 text-white text-xs px-2 py-0.5 rounded">
+                    <span className="absolute top-1 left-1 z-10 bg-black/60 text-white text-xs px-2 py-0.5 rounded">
                         {index + 1}
                     </span>
 

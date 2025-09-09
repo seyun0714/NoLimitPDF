@@ -101,8 +101,6 @@ function AppInner() {
                 </div>
             </main>
             <Footer />
-            <Analytics />
-            <SpeedInsights />
             <Toaster richColors position="top-center" />
         </div>
     );
@@ -112,6 +110,8 @@ function App() {
     return (
         <I18nProvider>
             <AppInner />
+            <Analytics />
+            <SpeedInsights />
         </I18nProvider>
     );
 }

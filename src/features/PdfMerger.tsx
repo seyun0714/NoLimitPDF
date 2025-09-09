@@ -133,19 +133,22 @@ export default function PdfMerger({ pdfFiles, setPdfFiles }: PdfMergerProps) {
     // 공통 DnD 훅
     const { sensors, onDragEnd } = useDndReorder(setPdfFiles);
 
-    // 공통 파일 입력 훅
-    const { open, inputProps } = useHiddenFileInput((files) => {
+    const addPdfs = (files: File[]) => {
         const picked = files.filter((f) => f.type === 'application/pdf');
-        if (picked.length !== files.length) {
-            toast.warning(t('toastWarnTypePdf') || 'Only PDF is allowed.');
-        }
-        const newFiles: AppFile[] = picked.map((file) => ({
-            id: crypto.randomUUID(),
-            file,
-            name: file.name,
-        }));
+        if (picked.length !== files.length) toast.warning(t('toastWarnTypePdf'));
+        const newFiles = picked.map((file) => ({ id: crypto.randomUUID(), file, name: file.name }));
         setPdfFiles((prev) => [...prev, ...newFiles]);
-    });
+    };
+
+    const { open, inputProps } = useHiddenFileInput(addPdfs);
+
+    const handleReset = () => {
+        setPdfFiles([]);
+        for (const [, url] of thumbCache) {
+            URL.revokeObjectURL(url);
+        }
+        thumbCache.clear();
+    };
 
     const handleMerge = async () => {
         if (pdfFiles.length === 0) {
@@ -178,13 +181,6 @@ export default function PdfMerger({ pdfFiles, setPdfFiles }: PdfMergerProps) {
         }
     };
 
-    const addPdfs = (files: File[]) => {
-        const picked = files.filter((f) => f.type === 'application/pdf');
-        if (picked.length !== files.length) toast.warning(t('toastWarnTypePdf'));
-        const newFiles = picked.map((file) => ({ id: crypto.randomUUID(), file, name: file.name }));
-        setPdfFiles((prev) => [...prev, ...newFiles]);
-    };
-
     const {
         getRootProps: getAppendRootProps,
         getInputProps: getAppendInputProps,
@@ -206,7 +202,7 @@ export default function PdfMerger({ pdfFiles, setPdfFiles }: PdfMergerProps) {
                         <p className="text-muted-foreground">{t('pdfMergeInfoP2')}</p>
                     </div>
                     <FileUpload
-                        onFilesAccepted={(files) => inputProps.onChange({ target: { files } } as any)}
+                        onFilesAccepted={addPdfs}
                         title={t('fileUploadPdfTitle')}
                         description={t('fileUploadPdfDescription')}
                         accept={{ 'application/pdf': ['.pdf'] }}
@@ -263,6 +259,9 @@ export default function PdfMerger({ pdfFiles, setPdfFiles }: PdfMergerProps) {
 
                         <div className="flex justify-center gap-4">
                             <input {...inputProps} accept="application/pdf" multiple />
+                            <Button variant="destructive" onClick={handleReset}>
+                                {t('reset')}
+                            </Button>
                             <Button variant="outline" onClick={open} className="cursor-pointer">
                                 {t('addFile')}
                             </Button>

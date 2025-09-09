@@ -34,6 +34,7 @@ const ko: Dict = {
     mergePdfs: '{count}개 PDF 병합하기',
     converting: '변환 중...',
     merging: '병합 중...',
+    reset: '초기화',
     toastWarnAddImages: 'PDF로 변환할 이미지를 추가해주세요.',
     toastWarnTypePdf: 'PDF 파일만 업로드할 수 있습니다.',
     toastSuccessPdfConversion: 'PDF 변환이 완료되었습니다!',
@@ -105,6 +106,8 @@ const en: Dict = {
     mergePdfs: 'Merge {count} PDFs',
     converting: 'Converting...',
     merging: 'Merging...',
+    reset: 'Reset',
+
     toastWarnAddImages: 'Please add images to convert to PDF.',
     toastWarnTypePdf: 'Only PDF files can be uploaded.',
     toastSuccessPdfConversion: 'PDF conversion complete!',
