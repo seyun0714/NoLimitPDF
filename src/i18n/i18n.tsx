@@ -1,3 +1,4 @@
+import PrivacyPolicy from '@/features/PrivacyPolicy';
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 
 type Lang = 'ko' | 'en';
@@ -61,6 +62,9 @@ const ko: Dict = {
     privacyPolicyIntroTitle: '소개',
     privacyPolicyIntroText:
         'NoLimitPDF("회사", "저희")는 귀하의 개인정보를 중요하게 생각합니다. \n본 개인정보처리방침은 저희가 귀하의 정보를 수집, 이용, 공개하는 방법에 대해 설명합니다.',
+    privacyPolicyAnalyticsTitle: '분석 도구',
+    privacyPolicyAnalyticsText:
+        '본 사이트는 서비스 개선 및 성능 최적화를 위해 Vercel Analytics와 Speed Insights를 사용합니다. 이 도구들은 쿠키를 사용하지 않으며, 페이지 조회수, 브라우저 종류, 운영 체제, 국가 등 개인을 식별할 수 없는 익명의 통계 데이터를 수집합니다. 자세한 내용은 Vercel의 개인정보처리방침을 참조하시기 바랍니다.',
     privacyPolicyCollectionTitle: '정보 수집',
     privacyPolicyCollectionText:
         '저희 서비스는 서버에 파일을 저장하지 않으며, 모든 PDF 변환 및 병합 과정은 사용자의 브라우저 내에서 로컬로 처리됩니다. 따라서 저희는 귀하가 업로드한 파일이나 개인 식별 정보를 수집하거나 저장하지 않습니다.',
@@ -134,6 +138,9 @@ const en: Dict = {
     privacyPolicyIntroTitle: 'Introduction',
     privacyPolicyIntroText:
         'NoLimitPDF ("Company", "we", "us") values your privacy. This Privacy Policy explains how we collect, use, and disclose your information.',
+    privacyPolicyAnalyticsTitle: 'Analytics',
+    privacyPolicyAnalyticsText:
+        "This site uses Vercel Analytics and Speed Insights to improve our service and optimize performance. These tools do not use cookies and collect anonymous statistical data such as page views, browser type, operating system, and country, which cannot be used to personally identify you. For more information, please refer to Vercel's Privacy Policy.",
     privacyPolicyCollectionTitle: 'Information Collection',
     privacyPolicyCollectionText:
         'Our service does not store your files on a server. All PDF conversion and merging processes are handled locally within your browser. Therefore, we do not collect or store the files you upload or any personally identifiable information.',

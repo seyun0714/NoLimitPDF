@@ -18,6 +18,20 @@ export default function PrivacyPolicy() {
                         <p className="text-muted-foreground leading-relaxed">{t('privacyPolicyIntroText')}</p>
                     </div>
                     <div>
+                        <h2 className="text-lg font-semibold">{t('privacyPolicyAnalyticsTitle')}</h2>
+                        <p className="text-muted-foreground leading-relaxed">
+                            {t('privacyPolicyAnalyticsText')}{' '}
+                            <a
+                                href="https://vercel.com/legal/privacy-policy"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-primary hover:underline"
+                            >
+                                Vercel PrivacyPolicy
+                            </a>
+                        </p>
+                    </div>
+                    <div>
                         <h2 className="text-lg font-semibold">{t('privacyPolicyCollectionTitle')}</h2>
                         <p className="text-muted-foreground leading-relaxed">{t('privacyPolicyCollectionText')}</p>
                     </div>
