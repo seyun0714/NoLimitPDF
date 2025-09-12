@@ -1,11 +1,4 @@
 User-agent: *
 Allow: /
 
-User-agent: Google-Extended
-Allow: /
-
-User-agent: CCBot
-Allow: /
-
-# 사이트맵 위치 명시
 Sitemap: https://www.nolimitpdf.com/sitemap.xml

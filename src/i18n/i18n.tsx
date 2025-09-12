@@ -1,4 +1,3 @@
-import PrivacyPolicy from '@/features/PrivacyPolicy';
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 
 type Lang = 'ko' | 'en';
