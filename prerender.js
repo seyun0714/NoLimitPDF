@@ -13,19 +13,22 @@ const siteUrl = 'https://www.nolimitpdf.com';
 // SEO 메타 태그에 사용할 한국어 기준 정보
 const koData = {
     '/': {
-        title: 'NoLimitPDF - 무제한 무료 PDF 변환 및 병합',
-        description: '회원가입 없이 무료로 이미지를 PDF로 변환하고 여러 PDF 파일을 하나로 병합하세요.',
+        title: 'NoLimitPDF | 무제한 무료 PDF 변환 및 병합',
+        description:
+            '회원가입, 설치 없이 JPG 이미지를 PDF로 변환하고 여러 PDF 파일을 하나로 합치세요. 100% 무료, 무제한으로 모든 기능이 브라우저에서 안전하게 처리됩니다.',
         ogImage: `${siteUrl}/og-main.png`,
     },
     '/image-to-pdf': {
-        title: '이미지 PDF 변환 | NoLimitPDF',
-        description: 'JPG, PNG 등 다양한 이미지를 PDF 파일로 쉽고 빠르게 변환하세요.',
+        title: 'JPG PDF 변환 사이트 (설치X, 무료) | NoLimitPDF',
+        description:
+            '여러 장의 JPG, PNG 이미지를 단 몇 초 만에 하나의 PDF 파일로 변환하세요. 별도의 프로그램 설치 없이, 웹사이트에서 바로 무료로 사용 가능합니다.',
         ogImage: `${siteUrl}/og-main.png`,
     },
     '/merge-pdf': {
-        title: 'PDF 병합 | NoLimitPDF',
+        title: 'PDF 파일 합치기 사이트 (무료, 무제한) | NoLimitPDF',
         description:
-            '여러 개의 PDF 파일을 하나로 합칩니다. 순서 변경도 자유롭게 가능하며, 모든 작업은 브라우저에서 안전하게 처리됩니다.',
+            '나눠진 여러 개의 PDF 파일을 드래그 한 번으로 완벽하게 합치세요. 순서 변경도 자유로우며, 회원가입 없이 무제한 무료로 이용할 수 있습니다.',
+
         ogImage: `${siteUrl}/og-main.png`,
     },
     '/about': {
